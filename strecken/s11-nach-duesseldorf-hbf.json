@@ -7,6 +7,7 @@
   "hinweis": "nur sonntags: Fahrt 00:43 ab Köln-Worringen",
   "ansageVorHalt": 400,
   "begruessung": {
+    "ton": "ton/s11-begruessung-nach-duesseldorf-hbf.mp3",
     "text": "Sehr geehrte Fahrgäste, wir begrüßen Sie im Schienenersatzverkehr der Linie S11. Dieser Bus fährt über Dormagen, Neuss Hauptbahnhof und Düsseldorf-Bilk nach Düsseldorf Hauptbahnhof. Milo Reisen wünscht Ihnen einen schönen Tag. Bis bald. Nächste Haltestelle: Dormagen Chempark."
   },
   "halte": [
@@ -20,6 +21,7 @@
       "lat": 51.076956,
       "lon": 6.838029,
       "ansage": {
+        "ton": "ton/s11-halt-dormagen-chempark.mp3",
         "text": "Nächste Haltestelle: Dormagen Chempark."
       }
     },
@@ -28,6 +30,7 @@
       "lat": 51.099282,
       "lon": 6.816974,
       "ansage": {
+        "ton": "ton/s11-halt-dormagen.mp3",
         "text": "Nächste Haltestelle: Dormagen."
       }
     },
@@ -36,6 +39,7 @@
       "lat": 51.123696,
       "lon": 6.783607,
       "ansage": {
+        "ton": "ton/s11-halt-nievenheim.mp3",
         "text": "Nächste Haltestelle: Nievenheim."
       }
     },
@@ -44,6 +48,7 @@
       "lat": 51.142436,
       "lon": 6.756699,
       "ansage": {
+        "ton": "ton/s11-halt-neuss-allerheiligen.mp3",
         "text": "Nächste Haltestelle: Neuss Allerheiligen."
       }
     },
@@ -52,6 +57,7 @@
       "lat": 51.160907,
       "lon": 6.731631,
       "ansage": {
+        "ton": "ton/s11-halt-neuss-norf.mp3",
         "text": "Nächste Haltestelle: Neuss-Norf."
       }
     },
@@ -60,6 +66,7 @@
       "lat": 51.185546,
       "lon": 6.694296,
       "ansage": {
+        "ton": "ton/s11-halt-neuss-sued.mp3",
         "text": "Nächste Haltestelle: Neuss Süd."
       }
     },
@@ -69,6 +76,7 @@
       "lon": 6.685509,
       "sprich": "Neuss Hauptbahnhof",
       "ansage": {
+        "ton": "ton/s11-halt-neuss-hbf.mp3",
         "text": "Nächste Haltestelle: Neuss Hauptbahnhof."
       }
     },
@@ -77,6 +85,7 @@
       "lat": 51.220242,
       "lon": 6.698451,
       "ansage": {
+        "ton": "ton/s11-halt-neuss-am-kaiser.mp3",
         "text": "Nächste Haltestelle: Neuss Am Kaiser."
       }
     },
@@ -85,6 +94,7 @@
       "lat": 51.206002,
       "lon": 6.715937,
       "ansage": {
+        "ton": "ton/s11-halt-neuss-rheinparkcenter.mp3",
         "text": "Nächste Haltestelle: Neuss Rheinparkcenter."
       }
     },
@@ -93,6 +103,7 @@
       "lat": 51.211104,
       "lon": 6.73927,
       "ansage": {
+        "ton": "ton/s11-halt-duesseldorf-hamm.mp3",
         "text": "Nächste Haltestelle: Düsseldorf-Hamm."
       }
     },
@@ -101,6 +112,7 @@
       "lat": 51.209817,
       "lon": 6.762184,
       "ansage": {
+        "ton": "ton/s11-halt-duesseldorf-voelklinger-strasse.mp3",
         "text": "Nächste Haltestelle: Düsseldorf Völklinger Straße."
       }
     },
@@ -109,6 +121,7 @@
       "lat": 51.210842,
       "lon": 6.77715,
       "ansage": {
+        "ton": "ton/s11-halt-duesseldorf-bilk.mp3",
         "text": "Nächste Haltestelle: Düsseldorf-Bilk."
       }
     },
@@ -117,6 +130,7 @@
       "lat": 51.211208,
       "lon": 6.788638,
       "ansage": {
+        "ton": "ton/s11-halt-duesseldorf-friedrichstadt.mp3",
         "text": "Nächste Haltestelle: Düsseldorf-Friedrichstadt."
       }
     },
@@ -126,6 +140,7 @@
       "lon": 6.794,
       "sprich": "Düsseldorf Hauptbahnhof",
       "ansage": {
+        "ton": "ton/s11-endhalt-duesseldorf-hbf.mp3",
         "text": "Nächste Haltestelle: Düsseldorf Hauptbahnhof. Diese Linie endet hier. Wir bitten alle Fahrgäste auszusteigen. Milo Reisen wünscht Ihnen einen schönen Tag. Bis bald!"
       }
     }
