@@ -63,6 +63,22 @@ def pruefe_strecken(o):
     return ids, daten
 
 
+def plugin_zip(o):
+    """WordPress-Plugin als ZIP zum Hochladen (Plugins → Installieren → Plugin hochladen)."""
+    import zipfile
+    quelle = o / 'wordpress' / 'milo-busgps'
+    if not quelle.is_dir():
+        return
+    ziel = o / 'wordpress' / 'milo-busgps.zip'
+    with zipfile.ZipFile(ziel, 'w', zipfile.ZIP_DEFLATED) as z:
+        for datei in sorted(quelle.rglob('*')):
+            if datei.is_file():
+                info = zipfile.ZipInfo('milo-busgps/' + datei.relative_to(quelle).as_posix(), date_time=(2026, 1, 1, 0, 0, 0))
+                info.compress_type = zipfile.ZIP_DEFLATED
+                info.external_attr = 0o644 << 16
+                z.writestr(info, datei.read_bytes())
+
+
 def fertig(ordner, version=None):
     o = pathlib.Path(ordner)
     kurz = lambda p: hashlib.sha256((o / p).read_bytes()).hexdigest()[:10]
@@ -103,6 +119,7 @@ def fertig(ordner, version=None):
     (o / 'sw.js').write_text(kopf.sub(lambda _: zeile, sw), encoding='utf-8')
     (o / 'version.json').write_text(json.dumps({'app': APP, 'version': cfg['version'], 'stand': cfg['stand']}, ensure_ascii=False, indent=1) + '\n', encoding='utf-8')
 
+    plugin_zip(o)
     print(f'Fertig: Version {cfg["version"]}, Stand {cfg["stand"]}, {len(ids)} Strecken, {len(dateien)} Dateien im Gerätespeicher.')
     for i in ids:
         s = daten[i]

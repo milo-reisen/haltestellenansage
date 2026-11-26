@@ -10,8 +10,8 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="app.css?v=0d5c701209">
-<script>window.HSA = {"version": "1.0.0", "stand": "769d433048"};</script>
+<link rel="stylesheet" href="app.css?v=c0c9ffd3b2">
+<script>window.HSA = {"version": "1.1.0", "stand": "441c874952"};</script>
 </head>
 <body>
 
@@ -20,12 +20,12 @@
   <header class="aw-band">
     <img class="aw-logo" src="logo/schriftzug-hell.png" alt="Milo Reisen">
     <div class="aw-titel">Haltestellenansage</div>
-    <div id="aw-gps" class="chip chip-aus" role="status">GPS wird gesucht …</div>
+    <div id="aw-gps" class="chip chip-aus" role="status">GPS …</div>
   </header>
   <div class="aw-inhalt">
-    <div id="aw-test" class="aw-testband" hidden>Testfahrt: Die Fahrt wird nur simuliert, das GPS wird nicht benutzt. Strecke wählen.</div>
-    <h1 class="aw-h">Strecke wählen</h1>
-    <div id="aw-liste" class="aw-liste"><p class="leer">Strecken werden geladen …</p></div>
+    <div id="aw-test" class="aw-testband" hidden>Testfahrt: Die Fahrt wird im Zeitraffer simuliert, das GPS wird nicht benutzt. Fahrplan antippen.</div>
+    <h1 class="aw-h">Fahrplan antippen – den Rest macht die App</h1>
+    <div id="aw-liste" class="aw-liste"><p class="leer">Fahrpläne werden geladen …</p></div>
   </div>
   <footer class="aw-fuss">
     <button id="bt-test" class="zweit" type="button" aria-pressed="false">Testfahrt</button>
@@ -68,13 +68,28 @@
   <form method="dialog" class="ei-form">
     <h2>Einstellungen</h2>
     <fieldset>
+      <legend>GPS vom Bus (Samsara)</legend>
+      <p id="ei-bus-status" class="ei-hinweis"></p>
+      <label class="ei-zeile">In welchem Bus hängt dieses Tablet?
+        <select id="ei-fahrzeug"><option value="">– erst „Fahrzeuge laden“ –</option></select>
+      </label>
+      <div class="ei-zeile"><span></span><button type="button" id="ei-fz-laden" class="zweit">Fahrzeuge laden</button></div>
+      <label><input type="checkbox" id="ei-ersatz" checked> GPS vom Tablet benutzen, wenn der Bus gerade keine Daten liefert</label>
+      <details class="ei-details">
+        <summary>Verbindung von Hand eintragen</summary>
+        <label class="ei-zeile">WordPress-Adresse <input id="ei-server" type="url" inputmode="url" placeholder="https://milo-reisen.de/wp-admin/admin-ajax.php"></label>
+        <label class="ei-zeile">App-Schlüssel <input id="ei-schluessel" type="text" autocomplete="off" spellcheck="false"></label>
+      </details>
+    </fieldset>
+    <label><input type="checkbox" id="ei-autorueck" checked> Am Endhalt nach 30 Sekunden von selbst die Rückfahrt starten</label>
+    <fieldset>
       <legend>Begrüßung abspielen</legend>
       <label><input type="radio" name="begr" value="abfahrt" checked> bei Abfahrt vom ersten Halt</label>
-      <label><input type="radio" name="begr" value="sofort"> sofort, wenn die Strecke angetippt wird</label>
+      <label><input type="radio" name="begr" value="sofort"> sofort, wenn der Fahrplan angetippt wird</label>
     </fieldset>
     <label class="ei-zeile">„Nächste Haltestelle“ ansagen
       <select id="ei-abstand">
-        <option value="">wie in der Strecke festgelegt</option>
+        <option value="">wie im Fahrplan festgelegt</option>
         <option value="200">200 m vor dem Halt</option>
         <option value="300">300 m vor dem Halt</option>
         <option value="400">400 m vor dem Halt</option>
@@ -107,6 +122,6 @@
 </dialog>
 
 <script src="fahrt.js?v=a978736dcf"></script>
-<script src="app.js?v=f07c2fe8cb"></script>
+<script src="app.js?v=2999b02be9"></script>
 </body>
 </html>

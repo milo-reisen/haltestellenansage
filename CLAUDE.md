@@ -13,3 +13,6 @@ Nutzer und Texte sind deutsch; Code-Bezeichner ebenfalls deutsch halten.
 - Fahrgastanzeige nachgebaut nach der PowerPoint „Ersatzverkehr S28“ (Farbe #9C1963, Calibri → Carlito). Maße in vh/vw.
   Änderungen am Aussehen mit einem Bildschirmfoto bei 1600×900 und 1280×800 prüfen.
 - Ablauf-Logik nur in `fahrt.js` (rein rechnend, in Node testbar); `app.js` macht Bildschirm, Ton, GPS, Bedienung.
+- GPS kommt vom Bus (Samsara) über das WordPress-Plugin `wordpress/milo-busgps/` auf milo-reisen.de (Samsara erlaubt
+  keinen Browser-Abruf; Token bleibt in WordPress). Tablet-GPS nur Ersatz. Plugin-Version im Kopf der PHP-Datei und in
+  `Milo_BusGPS::VERSION` gleich halten; `fertig.py` baut `wordpress/milo-busgps.zip`. Mit `php -l` prüfen.

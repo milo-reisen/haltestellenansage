@@ -1,6 +1,6 @@
 /* Haltestellenansage – Milo Reisen
- * Der Fahrer tippt eine Strecke an, alles Weitere läuft von selbst:
- * Anzeige auf den Monitoren, Begrüßung, „Nächste Haltestelle …“ per GPS.
+ * Der Fahrer tippt den Fahrplan an, alles Weitere läuft von selbst mit dem GPS des Busses (Samsara):
+ * Anzeige auf den Monitoren, Begrüßung, „Nächste Haltestelle …“, am Endhalt die Rückfahrt.
  * Ablauf (Schritte) steht in fahrt.js, hier sind Bildschirm, Ton, GPS und Bedienung.
  */
 (function () {
@@ -12,14 +12,17 @@
   /* ---------- Speicher auf dem Tablet ---------- */
   const lies = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
   const schreib = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* voll oder gesperrt */ } };
-  let einst = Object.assign({ begr: 'abfahrt', abstand: '', tempo: 10 }, lies('hsa.einst', {}));
+  let einst = Object.assign({ begr: 'abfahrt', abstand: '', tempo: 10, ersatzTablet: true, autoRueck: true, bus: null }, lies('hsa.einst', {}));
   let positionen = lies('hsa.positionen', {});   // { streckeId: { haltIndex: {lat, lon, zeit} } }
 
   /* ---------- Zustand ---------- */
   let strecken = [];          // geladene Strecken (mit id)
   let fahrt = null;           // laufende Fahrt
   let aktiv = null;           // { strecke, test }
-  let gpsLetzt = null;        // letzter echter GPS-Punkt
+  let tabletLetzt = null;     // letzter Punkt vom GPS des Tablets
+  let busLetzt = null;        // letzter Punkt vom GPS des Busses (Samsara über WordPress)
+  let busFehler = '';
+  let rueckTimer = null;
   let testModus = false;
   let sim = null;
 
@@ -102,31 +105,91 @@
     return k;
   }
 
-  /* ---------- GPS ---------- */
+  /* ---------- GPS: vom Bus (Samsara über das WordPress-Plugin) oder vom Tablet ---------- */
   function km(m) { return m < 1000 ? Math.round(m / 10) * 10 + ' m' : (m / 1000).toFixed(1).replace('.', ',') + ' km'; }
+  const frisch = (p, ms) => !!p && Date.now() - p.zeit < ms;
+  const busEingerichtet = () => !!(einst.bus && einst.bus.server && einst.bus.schluessel && einst.bus.fahrzeug);
 
-  function gpsStarten() {
-    if (!('geolocation' in navigator)) { zeigeGps(); return; }
-    navigator.geolocation.watchPosition(p => {
-      gpsLetzt = { lat: p.coords.latitude, lon: p.coords.longitude, genauigkeit: p.coords.accuracy, zeit: Date.now() };
-      zeigeGps();
-      if (aktiv && !aktiv.test) neuerPunkt(gpsLetzt);
-      if (!aktiv) zeichneListe(true);
-    }, err => { console.warn('GPS', err); zeigeGps(err); }, { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 });
-    setInterval(() => zeigeGps(), 5000);
+  /** Welche Quelle steuert gerade die Fahrt? Bus zuerst, Tablet nur als Ersatz. */
+  function quelle() {
+    if (busEingerichtet() && frisch(busLetzt, 15000) && busLetzt.gpsAlter < 45) return 'bus';
+    if ((!busEingerichtet() || einst.ersatzTablet) && frisch(tabletLetzt, 20000)) return 'tablet';
+    return null;
+  }
+  function aktuellerPunkt() { const q = quelle(); return q === 'bus' ? busLetzt : (q === 'tablet' ? tabletLetzt : null); }
+  function gpsFrisch() { return !!quelle(); }
+
+  function punktEingang(q, p) {
+    if (q === quelle() && aktiv && !aktiv.test) neuerPunkt(p);
+    if (!aktiv) zeichneListe(true);
+    zeigeGps();
   }
 
-  function gpsFrisch() { return gpsLetzt && Date.now() - gpsLetzt.zeit < 20000; }
+  function tabletGpsStarten() {
+    if (!('geolocation' in navigator)) return;
+    navigator.geolocation.watchPosition(p => {
+      tabletLetzt = { lat: p.coords.latitude, lon: p.coords.longitude, genauigkeit: p.coords.accuracy, zeit: Date.now() };
+      punktEingang('tablet', tabletLetzt);
+    }, err => { console.warn('Tablet-GPS', err); if (err.code === 1) tabletLetzt = null; zeigeGps(); },
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 });
+  }
 
-  function zeigeGps(err) {
-    const el = $('#aw-gps');
-    let text, klasse;
-    if (err && err.code === 1) { text = 'GPS nicht erlaubt'; klasse = 'chip-schlecht'; }
-    else if (!gpsFrisch()) { text = 'GPS wird gesucht …'; klasse = 'chip-aus'; }
-    else if (gpsLetzt.genauigkeit <= 25) { text = 'GPS gut (± ' + Math.round(gpsLetzt.genauigkeit) + ' m)'; klasse = 'chip-gut'; }
-    else if (gpsLetzt.genauigkeit <= 100) { text = 'GPS ungenau (± ' + Math.round(gpsLetzt.genauigkeit) + ' m)'; klasse = 'chip-mittel'; }
-    else { text = 'GPS zu ungenau'; klasse = 'chip-schlecht'; }
-    el.textContent = text; el.className = 'chip ' + klasse;
+  /* Punkt um „meter“ in Richtung „grad“ weiterschieben (Samsara meldet etwa alle 5 Sekunden). */
+  function verschiebe(p, meter, grad) {
+    const R = 6371000, rad = Math.PI / 180, d = meter / R, br = grad * rad, la = p.lat * rad, lo = p.lon * rad;
+    const la2 = Math.asin(Math.sin(la) * Math.cos(d) + Math.cos(la) * Math.sin(d) * Math.cos(br));
+    const lo2 = lo + Math.atan2(Math.sin(br) * Math.sin(d) * Math.cos(la), Math.cos(d) - Math.sin(la) * Math.sin(la2));
+    return { lat: la2 / rad, lon: lo2 / rad };
+  }
+
+  async function busFrage(action, extra) {
+    const r = await fetch(einst.bus.server, {
+      method: 'POST', cache: 'no-store',
+      body: new URLSearchParams(Object.assign({ action, schluessel: einst.bus.schluessel }, extra || {}))
+    });
+    let j = null;
+    try { j = await r.json(); } catch (e) { throw new Error('Antwort von WordPress unlesbar (Plugin aktiv?)'); }
+    if (!j || !j.ok) throw new Error((j && j.fehler) || ('Fehler ' + r.status));
+    return j;
+  }
+
+  async function busAbfragen() {
+    if (!busEingerichtet()) return;
+    const t0 = performance.now();
+    try {
+      const j = await busFrage('milo_busgps_position', { fahrzeug: einst.bus.fahrzeug });
+      const alter = (j.alter_s != null ? j.alter_s : 0) + (performance.now() - t0) / 2000;
+      let p = { lat: j.lat, lon: j.lon };
+      if (j.kmh > 3 && j.richtung != null && alter < 20) p = verschiebe(p, j.kmh / 3.6 * alter, j.richtung);
+      busLetzt = { lat: p.lat, lon: p.lon, genauigkeit: alter < 15 ? 12 : Math.min(150, 20 + alter * 2), zeit: Date.now(), gpsAlter: alter, kmh: j.kmh };
+      busFehler = '';
+      punktEingang('bus', busLetzt);
+    } catch (e) {
+      busFehler = e.message || 'WordPress nicht erreichbar';
+      zeigeGps();
+    }
+  }
+  (function busSchleife() {
+    const weiter = () => setTimeout(busSchleife, aktiv ? 3000 : 10000);
+    if (!busEingerichtet() || document.visibilityState !== 'visible') return weiter();
+    busAbfragen().finally(weiter);
+  })();
+
+  function gpsText() {
+    const q = quelle();
+    if (q === 'bus') return { t: 'GPS vom Bus' + (einst.bus.fahrzeugName ? ' (' + einst.bus.fahrzeugName + ')' : '') + ' · vor ' + Math.round(busLetzt.gpsAlter) + ' s', k: 'chip-gut' };
+    if (q === 'tablet') {
+      const ersatz = busEingerichtet() ? 'Tablet-GPS als Ersatz' : 'Tablet-GPS';
+      return { t: ersatz + ' (± ' + Math.round(tabletLetzt.genauigkeit) + ' m)', k: busEingerichtet() || tabletLetzt.genauigkeit > 25 ? 'chip-mittel' : 'chip-gut' };
+    }
+    if (busEingerichtet()) return { t: 'GPS vom Bus: ' + (busFehler || 'warte auf Daten …'), k: busFehler ? 'chip-schlecht' : 'chip-aus' };
+    return { t: 'Bus-GPS nicht eingerichtet · Tablet-GPS wird gesucht …', k: 'chip-aus' };
+  }
+
+  function zeigeGps() {
+    const el = $('#aw-gps'), g = gpsText();
+    el.textContent = g.t; el.className = 'chip ' + g.k;
+    if ($('#einst').open) zeigeBusStatus();
     if (aktiv) {
       $('#az-gps').hidden = aktiv.test || gpsFrisch();
       if (!$('#steuer').hidden) zeigeStatus();
@@ -134,14 +197,14 @@
   }
 
   /* ---------- Streckenauswahl ---------- */
-  let listeZuletzt = 0;
+  let listeZuletzt = 0, listeMitOrt = false;
   function zeichneListe(nurWennAlt) {
-    if (nurWennAlt && Date.now() - listeZuletzt < 15000) return;
-    listeZuletzt = Date.now();
-    const ort = gpsFrisch() ? gpsLetzt : null;
+    const ort = aktuellerPunkt();
+    if (nurWennAlt && Date.now() - listeZuletzt < 15000 && (listeMitOrt || !ort)) return;
+    listeZuletzt = Date.now(); listeMitOrt = !!ort;
     const box = $('#aw-liste');
     box.classList.toggle('test', testModus);
-    if (!strecken.length) { box.innerHTML = '<p class="leer">Keine Strecken gefunden.</p>'; return; }
+    if (!strecken.length) { box.innerHTML = '<p class="leer">Keine Fahrpläne gefunden.</p>'; return; }
     const sortiert = strecken.map(s => {
       const k = mitPositionen(s);
       return { s, d: ort ? abstand(ort, k.halte[0]) : null };
@@ -171,10 +234,12 @@
   }
 
   /* ---------- Fahrt ---------- */
-  function starteFahrt(id, test) {
+  function starteFahrt(id, test, automatisch) {
     const s = strecken.find(x => x.id === id);
     if (!s) return;
-    Ton.stopp(); Ton.freischalten(); vollbild(); wachHalten();
+    clearTimeout(rueckTimer); rueckTimer = null;
+    if (!automatisch) { Ton.stopp(); Ton.freischalten(); vollbild(); }
+    wachHalten();
     if (sim) { sim.stopp(); sim = null; }
     const strecke = mitPositionen(s);
     fahrt = new Fahrt(strecke, { ansageVorHalt: einst.abstand ? Number(einst.abstand) : undefined });
@@ -190,13 +255,14 @@
     zeichneAnzeige();
     if (einst.begr === 'sofort') verarbeite([fahrt.begruessen()]);
     if (test) { sim = new Simulation(strecke, Number(einst.tempo) || 10, neuerPunkt); sim.start(); }
-    else if (gpsFrisch()) neuerPunkt(gpsLetzt);
+    else if (gpsFrisch()) neuerPunkt(aktuellerPunkt());
     zeigeGps();
     schreib('hsa.letzte', { id, zeit: Date.now() });
   }
 
   function beendeFahrt() {
     Ton.stopp();
+    clearTimeout(rueckTimer); rueckTimer = null;
     if (sim) { sim.stopp(); sim = null; }
     fahrt = null; aktiv = null;
     try { if (wachSperre) wachSperre.release(); } catch (e) { /* egal */ }
@@ -221,6 +287,19 @@
       if (e.ton) Ton.spiele(e.ton, true);
     }
     if (neu) { zeichneAnzeige(); if (!$('#steuer').hidden) zeigeStatus(); }
+    planeRueckfahrt();
+  }
+
+  /* Am Endhalt nach einer halben Minute von selbst die Gegenrichtung starten (Einstellung). */
+  function planeRueckfahrt() {
+    if (!fahrt || !aktiv) return;
+    const r = aktiv.strecke.rueckfahrt;
+    const soll = fahrt.amEnde && einst.autoRueck && r && strecken.some(x => x.id === r);
+    if (!soll) { if (rueckTimer) { clearTimeout(rueckTimer); rueckTimer = null; } return; }
+    if (rueckTimer) return;
+    const warte = aktiv.test ? Math.max(1500, 30000 / (Number(einst.tempo) || 10)) : 30000;
+    aktiv.rueckUm = Date.now() + warte;
+    rueckTimer = setTimeout(() => { rueckTimer = null; if (fahrt && fahrt.amEnde) starteFahrt(r, aktiv.test, true); }, warte);
   }
 
   /* ---------- Fahrgastanzeige zeichnen ---------- */
@@ -298,8 +377,9 @@
 
   function naheHaltestelle() {
     if (!fahrt || !aktiv || aktiv.test || !gpsFrisch()) return null;
+    const pos = aktuellerPunkt();
     let best = null;
-    fahrt.halte.forEach((h, i) => { const d = abstand(h, gpsLetzt); if (d < 500 && (!best || d < best.d)) best = { i, d, name: h.name }; });
+    fahrt.halte.forEach((h, i) => { const d = abstand(h, pos); if (d < 500 && (!best || d < best.d)) best = { i, d, name: h.name }; });
     return best;
   }
 
@@ -308,15 +388,17 @@
     const s = fahrt.schritt, h = fahrt.halte;
     const ziel = fahrt.naechsterGpsSchritt();
     let text;
-    if (s.typ === 'ende') text = 'Endhaltestelle erreicht: ' + h[s.halt].name;
-    else {
-      const pos = aktiv.test ? (sim && sim.pos) : (gpsFrisch() ? gpsLetzt : null);
+    if (s.typ === 'ende') {
+      text = 'Endhaltestelle erreicht: ' + h[s.halt].name;
+      if (rueckTimer && aktiv.rueckUm) text += ' – Rückfahrt startet von selbst in ' + Math.max(0, Math.round((aktiv.rueckUm - Date.now()) / 1000)) + ' s';
+    } else {
+      const pos = aktiv.test ? (sim && sim.pos) : aktuellerPunkt();
       const entf = pos && ziel ? ' – noch ' + km(abstand(pos, h[ziel.halt])) : '';
       text = 'Als Nächstes: ' + ziel.was + ' „' + h[ziel.halt].name + '“' + entf;
       if (fahrt.sperre) text += ' (Automatik ruht nach „Zurück“ kurz)';
     }
     $('#st-status').textContent = text;
-    $('#st-gps').textContent = aktiv.test ? 'Testfahrt' : (gpsFrisch() ? 'GPS ± ' + Math.round(gpsLetzt.genauigkeit) + ' m' : 'kein GPS – mit „Weiter“ schalten');
+    $('#st-gps').textContent = aktiv.test ? 'Testfahrt' : (gpsFrisch() ? gpsText().t : 'kein GPS – mit „Weiter“ schalten');
     const rs = aktiv.strecke.rueckfahrt && strecken.find(x => x.id === aktiv.strecke.rueckfahrt);
     $('#st-rueck').hidden = !(rs && (s.typ === 'ende' || (s.typ === 'ansage' && s.halt === h.length - 1)));
     if (rs) $('#st-rueck').textContent = 'Rückfahrt nach ' + (rs.ziel || rs.halte[rs.halte.length - 1].name);
@@ -336,18 +418,18 @@
     if (!b || !fahrt) return;
     const a = b.dataset.a;
     if (a === 'weiter') { const ev = fahrt.weiter(); if (ev && ev.ton) Ton.stopp(); verarbeite([ev]); }
-    else if (a === 'zurueck') { Ton.stopp(); verarbeite([fahrt.zurueck()]); }
+    else if (a === 'zurueck') { Ton.stopp(); clearTimeout(rueckTimer); rueckTimer = null; verarbeite([fahrt.zurueck()]); }
     else if (a === 'wiederholen') { Ton.stopp(); Ton.spiele(fahrt.letzterTon || (fahrt.schritt.ton) || null); if (!fahrt.letzterTon && !fahrt.schritt.ton) meldung('Für diesen Schritt gibt es keine Ansage. Mit „Weiter“ kommt die nächste.'); }
     else if (a === 'position') {
-      const i = Number(b.dataset.halt);
-      if (!gpsFrisch() || isNaN(i)) return;
+      const i = Number(b.dataset.halt), pos = aktuellerPunkt();
+      if (!pos || isNaN(i)) return;
       positionen[aktiv.id] = positionen[aktiv.id] || {};
-      positionen[aktiv.id][i] = { lat: gpsLetzt.lat, lon: gpsLetzt.lon, zeit: Date.now() };
+      positionen[aktiv.id][i] = { lat: pos.lat, lon: pos.lon, zeit: Date.now() };
       schreib('hsa.positionen', positionen);
-      fahrt.halte[i].lat = gpsLetzt.lat; fahrt.halte[i].lon = gpsLetzt.lon;
-      meldung('Gespeichert: „' + fahrt.halte[i].name + '“ liegt jetzt hier (± ' + Math.round(gpsLetzt.genauigkeit) + ' m). Gilt ab jetzt auf diesem Tablet.');
+      fahrt.halte[i].lat = pos.lat; fahrt.halte[i].lon = pos.lon;
+      meldung('Gespeichert: „' + fahrt.halte[i].name + '“ liegt jetzt hier. Gilt ab jetzt auf diesem Tablet.');
     }
-    else if (a === 'rueck') { const r = aktiv.strecke.rueckfahrt, t = aktiv.test; starteFahrt(r, t); return; }
+    else if (a === 'rueck') { const r = aktiv.strecke.rueckfahrt, t = aktiv.test; starteFahrt(r, t, true); return; }
     else if (a === 'beenden') {
       if (endeArmiert && Date.now() - endeArmiert < 4000) { beendeFahrt(); return; }
       endeArmiert = Date.now(); b.textContent = 'Wirklich beenden? Nochmal tippen'; b.classList.add('warn');
@@ -385,6 +467,11 @@
     d.querySelectorAll('input[name=begr]').forEach(r => { r.checked = r.value === einst.begr; });
     $('#ei-abstand').value = einst.abstand || '';
     $('#ei-tempo').value = String(einst.tempo || 10);
+    $('#ei-ersatz').checked = einst.ersatzTablet !== false;
+    $('#ei-autorueck').checked = einst.autoRueck !== false;
+    $('#ei-server').value = (einst.bus && einst.bus.server) || '';
+    $('#ei-schluessel').value = (einst.bus && einst.bus.schluessel) || '';
+    zeigeFahrzeugwahl();
     const anz = Object.values(positionen).reduce((n, x) => n + Object.keys(x).length, 0);
     $('#ei-pos-text').textContent = 'Gespeicherte Haltestellen-Positionen: ' + anz;
     $('#ei-version').textContent = 'Version ' + CFG.version + (CFG.stand ? ' · Stand ' + CFG.stand : '');
@@ -394,8 +481,74 @@
     einst.begr = ($('#einst input[name=begr]:checked') || {}).value || 'abfahrt';
     einst.abstand = $('#ei-abstand').value;
     einst.tempo = Number($('#ei-tempo').value) || 10;
+    einst.ersatzTablet = $('#ei-ersatz').checked;
+    einst.autoRueck = $('#ei-autorueck').checked;
+    const server = $('#ei-server').value.trim(), schl = $('#ei-schluessel').value.trim();
+    const fz = $('#ei-fahrzeug');
+    einst.bus = Object.assign({}, einst.bus, { server, schluessel: schl });
+    if (fz.value !== (einst.bus.fahrzeug || '')) {
+      einst.bus.fahrzeug = fz.value;
+      einst.bus.fahrzeugName = fz.value ? fz.selectedOptions[0].dataset.name : '';
+      busLetzt = null; busFehler = '';
+      if (fz.value) busAbfragen();
+    }
     schreib('hsa.einst', einst);
+    zeigeGps(); zeigeBusStatus();
   });
+
+  /* Fahrzeugauswahl: in welchem Bus hängt dieses Tablet? */
+  function zeigeFahrzeugwahl(liste) {
+    const fz = $('#ei-fahrzeug');
+    const gewaehlt = (einst.bus && einst.bus.fahrzeug) || '';
+    fz.innerHTML = '';
+    const leer = document.createElement('option'); leer.value = ''; leer.textContent = liste ? '– bitte Bus wählen –' : '– erst „Fahrzeuge laden“ –'; fz.appendChild(leer);
+    const eintraege = liste || (gewaehlt ? [{ id: gewaehlt, name: einst.bus.fahrzeugName || gewaehlt }] : []);
+    const hier = tabletLetzt && frisch(tabletLetzt, 60000) ? tabletLetzt : null;
+    eintraege.map(f => Object.assign({}, f, { d: hier && f.lat != null ? abstand(hier, f) : null }))
+      .sort((x, y) => (x.d == null ? 1e12 : x.d) - (y.d == null ? 1e12 : y.d))
+      .forEach(f => {
+        const o = document.createElement('option');
+        o.value = f.id; o.dataset.name = f.name;
+        o.textContent = f.name + (f.kennzeichen ? ' (' + f.kennzeichen + ')' : '') + (f.d != null && f.d < 300 ? ' – steht hier' : '');
+        fz.appendChild(o);
+      });
+    fz.value = gewaehlt;
+    zeigeBusStatus();
+  }
+  function zeigeBusStatus() {
+    const el = $('#ei-bus-status');
+    if (!einst.bus || !einst.bus.server || !einst.bus.schluessel) el.textContent = 'Noch nicht verbunden. In WordPress unter Einstellungen → Bus-GPS (Samsara) den Einrichtungslink auf diesem Tablet öffnen.';
+    else if (!einst.bus.fahrzeug) el.textContent = 'Verbunden mit WordPress. Jetzt „Fahrzeuge laden“ und den Bus wählen, in dem dieses Tablet hängt.';
+    else if (quelle() === 'bus') el.textContent = 'Läuft: ' + gpsText().t + '.';
+    else el.textContent = 'Bus gewählt' + (busFehler ? ' – Fehler: ' + busFehler : ' – warte auf Daten …');
+  }
+  async function ladeFahrzeuge() {
+    const el = $('#ei-bus-status');
+    const server = $('#ei-server').value.trim(), schl = $('#ei-schluessel').value.trim();
+    if (!server || !schl) { zeigeBusStatus(); return; }
+    einst.bus = Object.assign({}, einst.bus, { server, schluessel: schl }); schreib('hsa.einst', einst);
+    el.textContent = 'Fahrzeuge werden geladen …';
+    try { const j = await busFrage('milo_busgps_fahrzeuge'); zeigeFahrzeugwahl(j.fahrzeuge || []); el.textContent = (j.fahrzeuge || []).length + ' Fahrzeuge gefunden. Bus wählen, in dem dieses Tablet hängt.'; }
+    catch (e) { el.textContent = 'Laden nicht möglich: ' + e.message; }
+  }
+  $('#ei-fz-laden').addEventListener('click', ladeFahrzeuge);
+
+  /* Einrichtungslink aus WordPress: …/haltestellenansage/#einrichten=… */
+  function einrichtenAusLink() {
+    const m = /^#einrichten=([A-Za-z0-9_-]+)/.exec(location.hash);
+    if (!m) return false;
+    try {
+      const b = m[1].replace(/-/g, '+').replace(/_/g, '/');
+      const daten = JSON.parse(decodeURIComponent(escape(atob(b + '='.repeat((4 - b.length % 4) % 4)))));
+      if (daten.s && daten.k) {
+        const gleich = einst.bus && einst.bus.server === daten.s;
+        einst.bus = Object.assign({}, gleich ? einst.bus : {}, { server: daten.s, schluessel: daten.k });
+        schreib('hsa.einst', einst);
+      }
+    } catch (e) { console.warn('Einrichtungslink unlesbar', e); }
+    history.replaceState(null, '', location.pathname + location.search);
+    return true;
+  }
   $('#ei-tontest').addEventListener('click', () => { Ton.freischalten(); Ton.stopp(); Ton.spiele({ text: 'Dies ist eine Testansage der Haltestellenansage von Milo Reisen.' }); });
   $('#ei-pos-loeschen').addEventListener('click', () => { positionen = {}; schreib('hsa.positionen', positionen); $('#ei-pos-text').textContent = 'Gespeicherte Haltestellen-Positionen: 0'; zeichneListe(); });
   $('#ei-neu').addEventListener('click', () => location.reload());
@@ -421,8 +574,11 @@
   /* ---------- Start ---------- */
   $('#aw-version').textContent = 'Version ' + CFG.version;
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => {});
-  ladeStrecken().then(() => zeichneListe()).catch(e => { $('#aw-liste').innerHTML = '<p class="leer">Strecken konnten nicht geladen werden.</p>'; console.error(e); });
-  gpsStarten();
+  const ausLink = einrichtenAusLink();
+  ladeStrecken().then(() => zeichneListe()).catch(e => { $('#aw-liste').innerHTML = '<p class="leer">Fahrpläne konnten nicht geladen werden.</p>'; console.error(e); });
+  if (!busEingerichtet() || einst.ersatzTablet) tabletGpsStarten();
+  zeigeGps();
+  if (ausLink) { oeffneEinstellungen(); ladeFahrzeuge(); }
 
   // Für Tests im Browser
   window.HSAApp = { starteFahrt, beendeFahrt, get fahrt() { return fahrt; }, neuerPunkt, zeigeSteuerung };

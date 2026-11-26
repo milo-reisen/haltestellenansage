@@ -1,35 +1,57 @@
 # Haltestellenansage – Milo Reisen
 
 App für die Tablets in den Bussen von Milo Reisen. Das Tablet ist mit den Monitoren im Bus verbunden und wird
-1:1 gespiegelt. Der Fahrer tippt nur die Strecke an – den Rest macht die App:
+1:1 gespiegelt. Die Fahrpläne mit den Haltestellen werden vorher im Büro angelegt. Der Fahrer tippt nur den Fahrplan
+an – ab dann arbeitet die App mit dem **GPS des Busses (Samsara)**:
 
 - Anzeige auf den Monitoren im Design der bisherigen PowerPoint (Linie oben, nächste Haltestellen in der Mitte, Ziel unten)
 - Begrüßungsansage bei Abfahrt vom ersten Halt
 - „Nächste Haltestelle …“ automatisch per GPS kurz vor jedem Halt
 - nach der Abfahrt rückt die Anzeige zum nächsten Halt weiter
-- am Endhalt: Knopf „Rückfahrt“
+- am Endhalt startet nach 30 Sekunden von selbst die Rückfahrt (abschaltbar)
 
 Adresse der App: **https://milo-reisen.github.io/haltestellenansage/**
+
+## GPS vom Bus: Samsara anbinden (einmalig)
+
+Samsara lässt sich aus einer Web-App nicht direkt abfragen (der Browser blockiert das, und der Samsara-Schlüssel
+darf nicht auf die Tablets). Deshalb holt ein kleines WordPress-Plugin auf milo-reisen.de die Position und gibt
+nur sie an die App weiter.
+
+1. **Samsara-Token anlegen:** Im Samsara-Dashboard → Einstellungen → API-Token → „API-Token hinzufügen“.
+   Nur Leserechte: *Fahrzeuge lesen* und *Fahrzeugstatistiken lesen* (Read Vehicles, Read Vehicle Statistics).
+2. **Plugin installieren:** `wordpress/milo-busgps.zip` herunterladen → in WordPress *Plugins → Installieren →
+   Plugin hochladen* → aktivieren.
+3. In WordPress *Einstellungen → Bus-GPS (Samsara)*: Token eintragen, speichern, „Fahrzeuge aus Samsara abrufen“
+   zur Probe.
+4. Den **Einrichtungslink** von dieser Seite auf jedem Tablet öffnen (per E-Mail/WhatsApp schicken). Die App öffnet
+   die Einstellungen; dort **„Fahrzeuge laden“** und den Bus wählen, in dem das Tablet hängt. Fertig.
+
+Samsara meldet die Position etwa alle 5 Sekunden; die App fragt alle 3 Sekunden und rechnet die Position mit
+Geschwindigkeit und Fahrtrichtung auf „jetzt“ hoch. Liefert der Bus keine Daten, nimmt die App das GPS des Tablets
+als Ersatz (abschaltbar).
 
 ## Tablet einrichten (einmalig)
 
 1. Auf dem Tablet **Chrome** öffnen und die Adresse oben aufrufen.
 2. Menü (⋮) → **„App installieren“** bzw. „Zum Startbildschirm hinzufügen“. Danach liegt „Ansage“ als App auf dem Tablet.
-3. App öffnen und **Standort erlauben** (wird für die automatischen Ansagen gebraucht).
+3. Einrichtungslink aus WordPress öffnen und den Bus wählen (siehe oben).
 4. In der App unter *Einstellungen → Testansage* prüfen, ob der Ton aus den Monitoren kommt. Lautstärke mit den Tasten am Tablet.
-5. Einmal kurz mit Internet öffnen – danach funktioniert alles auch ohne Netz (Anzeige, GPS, Ansagen).
+5. Einmal kurz mit Internet öffnen – danach laufen Anzeige und Ansagen auch ohne Netz. Für das GPS vom Bus braucht das
+   Tablet Internet (WLAN/Hotspot im Bus oder SIM); ohne Netz springt das Tablet-GPS ein.
 
 Tipp: Unter Android kann die App „angeheftet“ werden (Einstellungen → Sicherheit → App anheften). Dann kann der
 Fahrer nicht aus Versehen etwas anderes öffnen.
 
 ## Bedienung für den Fahrer
 
-- **Strecke antippen** – fertig. Ganz oben steht die Strecke, deren Startpunkt am nächsten ist („Startpunkt hier“).
+- **Fahrplan antippen** – fertig. Ganz oben steht der Fahrplan, dessen Startpunkt am nächsten ist („Startpunkt hier“).
+  Am Endhalt startet die Rückfahrt von selbst.
 - **Einmal auf den Bildschirm tippen** zeigt für 10 Sekunden die Knöpfe (sehen die Fahrgäste kurz mit):
   - **Weiter ▶ / ◀ Zurück** – schaltet wie früher in der PowerPoint einen Schritt vor oder zurück (falls das GPS mal danebenliegt).
   - **Ansage wiederholen**
   - **Position speichern** – speichert, wo die (Ersatz-)Haltestelle wirklich ist. Gilt danach auf diesem Tablet.
-  - **Rückfahrt nach …** – am Endhalt, startet die Gegenrichtung.
+  - **Rückfahrt nach …** – am Endhalt, startet die Gegenrichtung sofort (sonst nach 30 Sekunden von selbst).
   - **Fahrt beenden** – zweimal tippen.
 - **Testfahrt** (unten auf der Startseite): Die Fahrt wird im Zeitraffer abgespielt, mit Anzeige und Ton – ideal zum Ausprobieren im Büro.
 
@@ -48,9 +70,9 @@ Die Fahrt läuft in denselben Schritten wie die PowerPoint-Folien:
 Die 400 m stehen in jeder Strecke (`ansageVorHalt`) und lassen sich in den Einstellungen für das Tablet ändern.
 Die Begrüßung kann in den Einstellungen auch „sofort beim Antippen“ kommen.
 
-## Neue Strecke anlegen
+## Neuen Fahrplan anlegen
 
-Jede Fahrtrichtung ist eine Datei in `strecken/`, z. B. `strecken/s28-nach-vohwinkel.json`:
+Das Büro gibt die Haltestellen mit dem Fahrplan vor. Jede Fahrtrichtung ist eine Datei in `strecken/`, z. B. `strecken/s28-nach-vohwinkel.json`:
 
 ```json
 {
@@ -80,7 +102,8 @@ Jede Fahrtrichtung ist eine Datei in `strecken/`, z. B. `strecken/s28-nach-vohwi
 - Koordinaten: in Google Maps auf die Haltestelle tippen → die Zahlen oben sind `lat, lon`. Genauer geht es im Bus mit
   „Position speichern“.
 
-Am einfachsten: Claude die PowerPoint bzw. den Fahrplan geben und sagen „leg die Strecke in der Haltestellenansage an“.
+Am einfachsten: Claude den Fahrplan (PDF, Excel oder PowerPoint) geben und sagen „leg den Fahrplan in der
+Haltestellenansage an“.
 
 ## Neue Version veröffentlichen
 
@@ -98,7 +121,8 @@ Prüfen des Ablaufs ohne Tablet: `node werkzeug/test-fahrt.js`
 - `index.html`, `app.css`, `app.js` – Oberfläche, Ton, GPS, Bedienung
 - `fahrt.js` – Ablauf einer Fahrt (Schritte, GPS-Regeln), ohne Bildschirm
 - `sw.js` – Gerätespeicher, damit die App ohne Netz läuft
-- `strecken/` – Strecken, `ton/` – Ansagen, `bilder/` – SEV-Piktogramm und Haltestellen-Symbol
+- `strecken/` – Fahrpläne, `ton/` – Ansagen, `bilder/` – SEV-Piktogramm und Haltestellen-Symbol
+- `wordpress/milo-busgps/` – WordPress-Plugin für das GPS vom Bus (Samsara); `wordpress/milo-busgps.zip` zum Hochladen
 
 ## Fremde Bestandteile
 

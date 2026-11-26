@@ -91,7 +91,7 @@ button { font: inherit; cursor: pointer; }
 .st-meldung { margin: 12px 4px 0; font-size: 18px; color: #ffe08a; font-weight: 700; }
 
 /* ---------- Einstellungen ---------- */
-.einst { border: 0; border-radius: 18px; padding: 0; width: min(680px, 94vw); box-shadow: 0 20px 60px rgba(0,0,0,.35); font-family: var(--schrift); color: var(--tinte); }
+.einst { border: 0; border-radius: 18px; padding: 0; width: min(720px, 94vw); max-height: 92vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.35); font-family: var(--schrift); color: var(--tinte); }
 .einst::backdrop { background: rgba(16,24,32,.5); }
 .ei-form { padding: 22px 26px 22px; display: flex; flex-direction: column; gap: 14px; font-size: 19px; }
 .ei-form h2 { margin: 0 0 4px; font-size: 26px; }
@@ -102,6 +102,10 @@ button { font: inherit; cursor: pointer; }
 .ei-zeile { display: flex !important; align-items: center; justify-content: space-between; gap: 14px; }
 .ei-zeile select { font: inherit; font-size: 18px; padding: 8px 10px; border-radius: 10px; border: 1px solid #b9c5cf; background: #fff; max-width: 60%; }
 .ei-hinweis { margin: 0; color: var(--grau); font-size: 16px; }
+.ei-zeile input[type=url], .ei-zeile input[type=text] { font: inherit; font-size: 16px; padding: 8px 10px; border-radius: 10px; border: 1px solid #b9c5cf; width: 60%; }
+.ei-form input[type=checkbox] { width: 22px; height: 22px; flex: none; }
+.ei-details summary { cursor: pointer; color: var(--blau); font-weight: 700; margin: 4px 0; }
+.ei-details { display: flex; flex-direction: column; gap: 8px; }
 .ei-ende { display: flex; justify-content: flex-end; }
 
 @media (max-width: 700px) {
