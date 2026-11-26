@@ -145,7 +145,10 @@
     document.documentElement.style.setProperty('--linie', s.farbe || '#9C1963');
     $('#az-symbol').src = s.symbol || 'bilder/sev.png';
     $('#az-symbol').hidden = s.symbol === false;
-    $('#az-kopf').textContent = s.kopf || ('Linie ' + (s.linie || ''));
+    $('#az-linie').textContent = s.linie || '';
+    $('#az-linie').hidden = !s.linie;
+    const art = (s.kopf || '').replace(s.linie || '', '').trim();   // „Ersatzverkehr S11“ → „Ersatzverkehr“
+    $('#az-art').textContent = (art ? art + ' ' : '') + 'nach';
     $('#az-ziel').textContent = s.ziel || s.halte[s.halte.length - 1].name;
     $('#auswahl').hidden = true; $('#anzeige').hidden = false;
     versteckeSteuerung();
@@ -199,7 +202,7 @@
 
   /* ---------- Fahrgastanzeige zeichnen ---------- */
   function passe(el, box) {
-    // Text verkleinern, bis er in seinen Bereich passt (wie „Text an Form anpassen“ in PowerPoint)
+    // Text verkleinern, bis er in seinen Bereich passt
     el.style.transform = '';
     const st = getComputedStyle(box);
     const platz = box.clientWidth - (parseFloat(st.paddingLeft) || 0) - (parseFloat(st.paddingRight) || 0);
@@ -207,56 +210,41 @@
     if (breit > platz && platz > 0) el.style.transform = 'scale(' + (platz / breit) + ')';
   }
 
+  const MAX_PUNKTE = 7;   // so viele Halte passen auf die Linie; dazwischen „weitere“
   function zeichneAnzeige() {
     if (!fahrt) return;
+    $('#az-name').textContent = fahrt.naechster.name;
     const namen = fahrt.anzeige;                  // nächster Halt zuerst, Endhalt zuletzt
-    let zeilen = namen.slice(), luecke = false;
-    if (namen.length > 4) { zeilen = [namen[0], namen[1], namen[2], namen[namen.length - 1]]; luecke = true; }
-    const n = zeilen.length;
-    const leiter = $('#az-leiter');
-    leiter.innerHTML = '';
-    const hoeheVh = leiter.clientHeight / window.innerHeight * 100;
-    const G = 3.3;
-    const R = Math.min(13.8, (hoeheVh - 5 - (n - 1) * G) / n);
-    const F = 7.4 * R / 13.8;
-    leiter.style.setProperty('--r', R + 'vh');
-    leiter.style.setProperty('--f', F + 'vh');
-    const basis = (hoeheVh - (n * R + (n - 1) * G)) / 2;   // Block senkrecht mittig wie in der PowerPoint
-    const unten = i => basis + i * (R + G);       // Zeile 0 (nächster Halt) ganz unten
-    if (n > 1) {
-      const v = document.createElement('div');
-      v.className = 'verbinder';
-      v.style.left = 'calc(var(--x) + ' + (R / 2) + 'vh - 2.1vh)';
-      v.style.bottom = (basis + R / 2) + 'vh';
-      v.style.height = (unten(n - 1) - basis) + 'vh';
-      leiter.appendChild(v);
-      if (luecke) {
-        const d = document.createElement('div');
-        d.className = 'mehr';
-        d.style.left = v.style.left;
-        d.style.bottom = (unten(n - 2) + R) + 'vh';
-        d.style.height = G + 'vh';
-        d.innerHTML = '<i></i><i></i>';
-        leiter.appendChild(d);
-      }
+    let punkte = namen.map((n, i) => ({ name: n, art: i === 0 ? 'jetzt' : (i === namen.length - 1 ? 'ziel' : '') }));
+    if (punkte.length > MAX_PUNKTE) {
+      const weg = punkte.length - (MAX_PUNKTE - 1);
+      punkte = punkte.slice(0, MAX_PUNKTE - 2).concat([{ name: weg + ' weitere', art: 'mehr' }], [punkte[punkte.length - 1]]);
     }
-    zeilen.forEach((name, i) => {
-      const z = document.createElement('div');
-      z.className = 'halt' + (i === 0 ? ' halt-naechster' : '');
-      z.style.bottom = unten(i) + 'vh';
-      z.innerHTML = '<div class="halt-balken"></div><img class="halt-h" src="bilder/haltestelle.png" alt=""><div class="halt-t"><span></span></div>';
-      z.querySelector('span').textContent = name;
-      leiter.appendChild(z);
+    if (punkte.length === 1) punkte[0].art = 'ziel';
+    const band = $('#az-band');
+    band.parentNode.classList.toggle('allein', punkte.length === 1);
+    band.innerHTML = '';
+    punkte.forEach((p, i) => {
+      const li = document.createElement('li');
+      li.className = p.art;
+      // Endhalt ganz rechts, die übrigen Halte auf den ersten drei Vierteln der Linie
+      const n = punkte.length, spanne = Math.min(0.74, (n - 2) / (n - 1));
+      const f = i === n - 1 ? 1 : (n <= 2 ? 0 : spanne * i / (n - 2));
+      li.style.left = 'calc(1.8vh + (100% - 4.2vh) * ' + f + ')';
+      li.innerHTML = p.art === 'ziel' ? '<img src="bilder/haltestelle.png" alt=""><span></span>' : '<i></i><span></span>';
+      li.querySelector('span').textContent = p.name;
+      band.appendChild(li);
     });
-    // Schaltfläche „Nächste Haltestelle“ neben dem nächsten Halt
-    const k = $('#az-knopf');
-    k.style.bottom = basis + 'vh';
-    k.style.height = R + 'vh';
     zeichneKnopf();
     requestAnimationFrame(() => {
-      leiter.querySelectorAll('.halt-t').forEach(t => passe(t.firstChild, t));
-      passe($('#az-kopf'), $('#az-kopf').parentNode);
-      passe($('#az-ziel'), $('#az-ziel').parentNode);
+      // Schräge Namen auf der Linie nicht zu lang werden lassen (sonst laufen sie in den großen Namen)
+      const max = window.innerHeight * 0.30;
+      band.querySelectorAll('li:not(.ziel) span').forEach(s => {
+        const b = s.offsetWidth;
+        if (b > max) s.style.fontSize = Math.max(2.6, 3.9 * max / b) + 'vh';
+      });
+      passe($('#az-name'), $('#az-name').parentNode);
+      passe($('.kopf-ziel > span'), $('.kopf-ziel'));
     });
   }
   window.addEventListener('resize', () => zeichneAnzeige());
@@ -264,7 +252,7 @@
   function zeichneKnopf() {
     if (!fahrt) return;
     const k = $('#az-knopf');
-    $('#az-knopf-t').innerHTML = fahrt.amEnde ? 'End&shy;haltestelle' : 'Nächste<br>Haltestelle';
+    $('#az-knopf-t').textContent = fahrt.amEnde ? 'Endhaltestelle' : 'Nächste Haltestelle';
     k.classList.toggle('ende', fahrt.amEnde);
     k.classList.toggle('spricht', Ton.spieltGerade);
     const rest = fahrt.restMs(Date.now());
@@ -273,6 +261,12 @@
     if (rest != null) balken.style.transform = 'scaleX(' + (rest / fahrt.o.wechselNachMs) + ')';
   }
   Ton.beobachte(() => zeichneKnopf());
+
+  function zeigeUhr() {
+    const d = new Date();
+    $('#az-uhr').textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+  zeigeUhr(); setInterval(zeigeUhr, 5000);
 
   $('#az-knopf').addEventListener('click', e => { e.stopPropagation(); sageAn(); });
 
@@ -297,7 +291,7 @@
     let text;
     if (fahrt.amEnde) text = 'Endhaltestelle ' + fahrt.naechster.name + ' erreicht.';
     else if (rest != null) text = '„' + fahrt.naechster.name + '“ angesagt – Anzeige wechselt in ' + mmss(rest) + ' zum nächsten Halt.';
-    else text = 'Nächster Halt: „' + fahrt.naechster.name + '“ – zum Ansagen links auf „Nächste Haltestelle“ tippen.';
+    else text = 'Nächster Halt: „' + fahrt.naechster.name + '“ – zum Ansagen auf „Nächste Haltestelle“ tippen.';
     $('#st-status').textContent = text;
     const r = aktiv.strecke.rueckfahrt && strecken.find(x => x.id === aktiv.strecke.rueckfahrt);
     $('#st-rueck').hidden = !r;

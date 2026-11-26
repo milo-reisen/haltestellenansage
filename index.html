@@ -10,8 +10,8 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="app.css?v=7b71def5dc">
-<script>window.HSA = {"version": "2.0.0", "stand": "dd03ac529a"};</script>
+<link rel="stylesheet" href="app.css?v=2377cdc781">
+<script>window.HSA = {"version": "2.1.0", "stand": "2f69f136c4"};</script>
 </head>
 <body>
 
@@ -35,17 +35,22 @@
 <section id="anzeige" class="anzeige" hidden aria-live="polite">
   <header class="kopf">
     <img id="az-symbol" class="kopf-sym" src="bilder/sev.png" alt="">
-    <div class="kopf-t"><span id="az-kopf">Ersatzverkehr</span></div>
+    <span id="az-linie" class="kopf-linie">S11</span>
+    <span class="kopf-ziel"><span><small id="az-art">Ersatzverkehr nach</small><b id="az-ziel"></b></span></span>
+    <span id="az-uhr" class="kopf-uhr"></span>
   </header>
-  <div class="mitte">
-    <div id="az-leiter" class="leiter"></div>
-    <button id="az-knopf" class="knopf" type="button" aria-label="Nächste Haltestelle ansagen">
-      <svg class="knopf-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a4.5 4.5 0 0 1 0 7M18.5 6a8 8 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      <span id="az-knopf-t" class="knopf-t">Nächste<br>Haltestelle</span>
-      <i id="az-knopf-zeit" class="knopf-zeit" hidden></i>
+  <section class="naechster">
+    <button id="az-knopf" class="ansagen" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a4.5 4.5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <span id="az-knopf-t">Nächste Haltestelle</span>
+      <i id="az-knopf-zeit" class="zeit" hidden></i>
     </button>
-  </div>
-  <footer class="fuss"><div class="fuss-t"><span id="az-ziel"></span></div></footer>
+    <div class="name"><span id="az-name"></span></div>
+  </section>
+  <section class="band">
+    <i class="schiene"></i>
+    <ol id="az-band"></ol>
+  </section>
 </section>
 
 <!-- Fahrermenü: erscheint nach Antippen der Anzeige, verschwindet von selbst -->
@@ -92,6 +97,6 @@
 </dialog>
 
 <script src="fahrt.js?v=9535e2f8e5"></script>
-<script src="app.js?v=0c1596f361"></script>
+<script src="app.js?v=645bdd4952"></script>
 </body>
 </html>

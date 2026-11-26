@@ -4,8 +4,9 @@ Statische Web-App (PWA) auf GitHub Pages: https://milo-reisen.github.io/halteste
 keine Abhängigkeiten. Läuft auf Android-Tablets in Chrome, die 1:1 auf die Monitore im Bus gespiegelt werden.
 Nutzer und Texte sind deutsch; Code-Bezeichner ebenfalls deutsch halten.
 
-- Bedienung ohne GPS (Nutzer hat GPS/Samsara verworfen): Fahrer tippt Fahrplan → Begrüßung; gelbe Schaltfläche
-  „Nächste Haltestelle“ → Ansage; 2 Minuten nach Ende der Ansage rückt die Anzeige weiter; nach Endhalt Rückfahrt.
+- Bedienung ohne GPS (Nutzer hat GPS/Samsara verworfen): Fahrer tippt Fahrplan → Begrüßung; dezente Beschriftung
+  „Nächste Haltestelle“ (= Schaltfläche, soll NICHT auffällig sein) → Ansage; 2 Minuten nach Ende der Ansage rückt die
+  Anzeige weiter; nach Endhalt Rückfahrt.
 - Nach jeder Änderung `python3 werkzeug/fertig.py` ausführen (prüft Fahrpläne, setzt Kennungen, `sw.js`, `version.json`),
   dann `node werkzeug/test-fahrt.js`. Erst danach committen.
 - Neuer Fahrplan = eine JSON-Datei je Fahrtrichtung in `strecken/` (Format siehe README), Gegenrichtung über `rueckfahrt`.
@@ -15,6 +16,8 @@ Nutzer und Texte sind deutsch; Code-Bezeichner ebenfalls deutsch halten.
   Bis bald. Nächste Haltestelle: …“; je Halt „Nächste Haltestelle: X.“; Endhalt zusätzlich „Diese Linie endet hier.
   Wir bitten alle Fahrgäste auszusteigen. Milo Reisen wünscht Ihnen einen schönen Tag. Bis bald!“
   Gleiche Texte nur einmal aufnehmen und in mehreren Fahrplänen verwenden.
-- Fahrgastanzeige nachgebaut nach der PowerPoint „Ersatzverkehr S28“ (Farbe #9C1963, Calibri → Carlito). Maße in vh/vw.
-  Änderungen am Aussehen mit einem Bildschirmfoto bei 1600×900 und 1280×800 prüfen.
+- Fahrgastanzeige Design „Tag“ (vom Nutzer gewählt; das PowerPoint-Design und eine gelbe Schaltfläche hat er abgelehnt):
+  weiß, Kopfband in Linienfarbe (#9C1963) mit SEV-Piktogramm, Linien-Plakette, „Ersatzverkehr nach Ziel“, Uhr;
+  nächste Haltestelle groß (Barlow Semi Condensed 700); unten Streckenverlauf als Linie, Namen schräg, Endhalt mit H-Schild.
+  Maße in vh/vw. Änderungen am Aussehen mit einem Bildschirmfoto bei 1600×900 und 1280×800 prüfen.
 - Ablauf-Logik nur in `fahrt.js` (rein rechnend, Zeit von außen, in Node testbar); `app.js` macht Bildschirm, Ton, Bedienung.

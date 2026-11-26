@@ -1,19 +1,23 @@
 /* Haltestellenansage – Milo Reisen
- * Fahrgastanzeige: nachgebaut nach der PowerPoint „Ersatzverkehr S28“
- * (Kopf- und Fußband in Linienfarbe, Haltestellen als Balken mit H-Symbol, Schrift Calibri → Carlito).
- * Maße in vh/vw, damit die Anzeige jeden Bildschirm füllt wie eine Folie.
+ * Fahrgastanzeige „Tag“: Kopfband in Linienfarbe mit Uhr, nächste Haltestelle groß,
+ * Streckenverlauf unten als Linie. Maße in vh/vw, damit die Anzeige jeden Bildschirm füllt.
+ * Schrift: Barlow Semi Condensed (Namen) und Barlow (Beschriftungen), SIL Open Font License.
  */
-@font-face { font-family: "Carlito"; src: url("fonts/Carlito-Bold.ttf") format("truetype"); font-weight: 700; font-display: block; }
-@font-face { font-family: "Carlito"; src: url("fonts/Carlito-Regular.ttf") format("truetype"); font-weight: 400; font-display: block; }
+@font-face { font-family: "Barlow SC"; src: url("fonts/barlow-semi-condensed-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-display: block; }
+@font-face { font-family: "Barlow SC"; src: url("fonts/barlow-semi-condensed-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: block; }
+@font-face { font-family: "Barlow SC"; src: url("fonts/barlow-semi-condensed-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-display: block; }
+@font-face { font-family: "Barlow"; src: url("fonts/barlow-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-display: block; }
+@font-face { font-family: "Barlow"; src: url("fonts/barlow-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: block; }
 
 :root {
   --linie: #9C1963;
-  --blau: #1f75ae;
+  --tinte: #23121f;      /* Schrift auf Weiß */
+  --matt: #7d6a77;       /* leise Beschriftungen */
+  --blau: #1f75ae;       /* Milo Reisen, nur Fahrerseite */
   --blau-hell: #e9f2f8;
-  --tinte: #16222c;
   --grau: #5b6873;
-  --linie-hell: #ffffff;
-  --schrift: "Carlito", Calibri, "Segoe UI", Roboto, Arial, sans-serif;
+  --schmal: "Barlow SC", "Barlow", Roboto, Arial, sans-serif;
+  --schrift: "Barlow", Roboto, Arial, sans-serif;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; background: #fff; color: var(--tinte); font-family: var(--schrift); -webkit-tap-highlight-color: transparent; }
@@ -21,99 +25,104 @@ body { overflow: hidden; user-select: none; -webkit-user-select: none; }
 [hidden] { display: none !important; }
 button { font: inherit; cursor: pointer; }
 
-/* ---------- Streckenauswahl ---------- */
+/* ---------- Fahrplanauswahl (Fahrerseite) ---------- */
 .auswahl { position: fixed; inset: 0; display: flex; flex-direction: column; background: #f4f7fa; }
 .aw-band { display: flex; align-items: center; gap: 22px; padding: 14px 26px; background: var(--blau); color: #fff; }
 .aw-logo { height: 30px; width: auto; }
-.aw-titel { font-size: 28px; font-weight: 700; flex: 1; letter-spacing: .2px; }
+.aw-titel { font-size: 26px; font-weight: 600; flex: 1; }
 .aw-inhalt { flex: 1; overflow-y: auto; padding: 18px 26px 10px; }
-.aw-h { font-size: 24px; margin: 6px 0 14px; color: var(--grau); font-weight: 700; }
+.aw-h { font-size: 22px; margin: 6px 0 14px; color: var(--grau); font-weight: 600; }
 .aw-liste { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 16px; }
 .leer { font-size: 20px; color: var(--grau); }
-
-.karte { display: flex; align-items: stretch; gap: 0; min-height: 118px; text-align: left; border: 0; padding: 0; border-radius: 16px; background: #fff; box-shadow: 0 1px 2px rgba(16,32,48,.08), 0 4px 14px rgba(16,32,48,.08); overflow: hidden; color: var(--tinte); transition: transform .12s; }
+.karte { display: flex; align-items: stretch; min-height: 118px; text-align: left; border: 0; padding: 0; border-radius: 14px; background: #fff; box-shadow: 0 1px 2px rgba(16,32,48,.08), 0 4px 14px rgba(16,32,48,.07); overflow: hidden; color: var(--tinte); }
 .karte:active { transform: scale(.985); }
-.karte-linie { flex: 0 0 104px; display: grid; place-items: center; background: var(--k, var(--linie)); color: #fff; font-size: 34px; font-weight: 700; }
+.karte-linie { flex: 0 0 100px; display: grid; place-items: center; background: var(--k, var(--linie)); color: #fff; font-family: var(--schmal); font-size: 36px; font-weight: 700; }
 .karte-text { flex: 1; padding: 14px 18px; display: flex; flex-direction: column; justify-content: center; gap: 4px; min-width: 0; }
-.karte-ziel { font-size: 27px; font-weight: 700; line-height: 1.1; }
+.karte-ziel { font-family: var(--schmal); font-size: 30px; font-weight: 700; line-height: 1.05; }
 .karte-weg { font-size: 17px; color: var(--grau); line-height: 1.25; }
 .karte-info { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
-.marke { font-size: 14px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--blau-hell); color: var(--blau); }
+.marke { font-size: 14px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--blau-hell); color: var(--blau); }
 .marke-hier { background: #e3f6e8; color: #17672e; }
 .marke-tts { background: #f1eef5; color: #5b3d7a; }
 .marke-hinweis { background: #fff4d6; color: #6b4a00; }
-
 .aw-fuss { display: flex; align-items: center; gap: 12px; padding: 12px 26px 16px; }
 .aw-version { margin-left: auto; color: var(--grau); font-size: 15px; }
-.zweit { background: #fff; color: var(--blau); border: 2px solid var(--blau); border-radius: 12px; min-height: 48px; padding: 0 18px; font-weight: 700; font-size: 18px; }
-.zweit[aria-pressed="true"] { background: #d79b00; border-color: #d79b00; color: #fff; }
-.haupt { background: var(--blau); color: #fff; border: 0; border-radius: 12px; min-height: 52px; padding: 0 22px; font-weight: 700; font-size: 19px; }
+.zweit { background: #fff; color: var(--blau); border: 2px solid var(--blau); border-radius: 12px; min-height: 48px; padding: 0 18px; font-weight: 600; font-size: 18px; }
+.haupt { background: var(--blau); color: #fff; border: 0; border-radius: 12px; min-height: 52px; padding: 0 22px; font-weight: 600; font-size: 19px; }
 
 /* ---------- Fahrgastanzeige ---------- */
-.anzeige { position: fixed; inset: 0; background: #fff; overflow: hidden; cursor: none; }
-.kopf, .fuss { position: absolute; left: 0; right: 0; height: 20.58vh; background: var(--linie); color: #fff; display: flex; align-items: center; justify-content: center; }
-.kopf { top: 0; }
-.fuss { bottom: 0; height: 20.8vh; }
-.kopf-sym { position: absolute; left: 0; top: 0; height: 20.58vh; width: auto; }
-.kopf-t, .fuss-t { width: 100%; display: flex; justify-content: center; align-items: center; font-weight: 700; white-space: nowrap; line-height: 1; }
-.kopf-t { padding: 0 13vw; font-size: 14.8vh; }
-.fuss-t { padding: 0 3vw; font-size: 17.8vh; }
-.kopf-t span, .fuss-t span { display: inline-block; flex: none; transform-origin: center; }
-.mitte { position: absolute; left: 0; right: 0; top: 20.58vh; bottom: 20.8vh; }
-.leiter { position: absolute; inset: 0; --x: 20vw; }
-.verbinder { position: absolute; width: 4.2vh; background: var(--linie); }
-.mehr { position: absolute; width: 4.2vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .9vh; }
-.mehr i { display: block; width: 1.5vh; height: 1.5vh; border-radius: 50%; background: #fff; }
-.halt { position: absolute; left: var(--x); right: 11.5vw; height: var(--r); }
-.halt-h { position: absolute; left: 0; top: 0; width: var(--r); height: var(--r); border-radius: 50%; z-index: 2; }
-.halt-balken { position: absolute; left: calc(var(--r) * .3); right: 0; top: 0; bottom: 0; background: var(--linie); }
-.halt-t { position: absolute; left: calc(var(--r) + 1vw); right: 1.2vw; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: var(--f); white-space: nowrap; overflow: visible; }
-.halt-t span { display: inline-block; flex: none; transform-origin: center; }
+.anzeige { position: fixed; inset: 0; background: #fff; overflow: hidden; display: grid; grid-template-rows: 15vh 1fr 33vh; }
 
-/* Schaltfläche „Nächste Haltestelle“: für den Fahrer zum Antippen, für die Fahrgäste die Beschriftung des nächsten Halts */
-.knopf { position: absolute; left: 1.8vw; width: 16.8vw; z-index: 3; border: 0; padding: 0 1.2vw 0 1vw; border-radius: 1.8vh;
-  background: #FFE600; color: #0d5c2e; display: flex; align-items: center; gap: .9vw; cursor: pointer; overflow: hidden;
-  box-shadow: 0 .5vh 1.4vh rgba(0,0,0,.22), inset 0 -.5vh 0 rgba(0,0,0,.08); font-family: var(--schrift); text-align: left; }
-.knopf:active { transform: translateY(.3vh); box-shadow: 0 .2vh .6vh rgba(0,0,0,.25); }
-.knopf-ico { flex: none; width: min(4.4vh, 2.6vw); height: min(4.4vh, 2.6vw); }
-.knopf-t { font-weight: 700; font-size: min(4vh, 2.2vw); line-height: 1.05; }
-.knopf-zeit { position: absolute; left: 0; right: 0; bottom: 0; height: .9vh; background: #0d5c2e; transform-origin: left center; transition: transform 1s linear; }
-.knopf.spricht { animation: spricht 1.1s ease-in-out infinite; }
-.knopf.spricht .knopf-ico { animation: ico 0.55s ease-in-out infinite alternate; }
-@keyframes spricht { 0%, 100% { box-shadow: 0 .5vh 1.4vh rgba(0,0,0,.22), 0 0 0 0 rgba(255,230,0,.65); } 50% { box-shadow: 0 .5vh 1.4vh rgba(0,0,0,.22), 0 0 0 1.4vh rgba(255,230,0,0); } }
-@keyframes ico { from { transform: scale(1); } to { transform: scale(1.15); } }
-.knopf.ende { background: #fff; color: var(--linie); box-shadow: inset 0 0 0 .5vh var(--linie); }
-.knopf.ende .knopf-ico { display: none; }
+.kopf { display: flex; align-items: center; gap: 1.8vw; padding: 0 3.5vw 0 2vw; background: var(--linie); color: #fff; min-width: 0; }
+.kopf-sym { height: 10.5vh; width: auto; flex: none; }
+.kopf-linie { flex: none; font-family: var(--schmal); font-weight: 700; font-size: 6.2vh; line-height: 1; padding: .8vh 1.5vh 1vh; border-radius: 1.1vh; background: #fff; color: var(--linie); }
+.kopf-ziel { flex: 1; min-width: 0; font-family: var(--schmal); font-weight: 600; font-size: 5.4vh; white-space: nowrap; overflow: hidden; }
+.kopf-ziel > span { display: inline-block; transform-origin: left center; }
+.kopf-ziel small { font-weight: 500; font-size: 4vh; opacity: .82; margin-right: .6vw; }
+.kopf-ziel b { font-weight: 600; }
+.kopf-uhr { flex: none; font-family: var(--schmal); font-weight: 600; font-size: 5.6vh; font-variant-numeric: tabular-nums; }
+
+.naechster { padding: 3.5vh 4vw 0; display: flex; flex-direction: column; justify-content: center; gap: .6vh; min-width: 0; }
+/* „Nächste Haltestelle“: für Fahrgäste eine leise Beschriftung, für den Fahrer die Schaltfläche */
+.ansagen { align-self: flex-start; position: relative; display: inline-flex; align-items: center; gap: 1.1vh; min-height: 7vh;
+  margin-left: -1.4vh; padding: 1vh 1.4vh; border: 0; border-radius: 1vh; background: none;
+  font-family: var(--schrift); font-size: 3.6vh; font-weight: 500; color: var(--matt); }
+.ansagen:active { background: rgba(0,0,0,.05); }
+.ansagen svg { width: 3.2vh; height: 3.2vh; opacity: .7; }
+.ansagen::after { content: ""; position: absolute; left: 1.4vh; right: 1.4vh; bottom: .9vh; height: .3vh; background: var(--matt); opacity: .25; }
+.ansagen .zeit { position: absolute; left: 1.4vh; right: 1.4vh; bottom: .9vh; height: .3vh; background: var(--linie); opacity: .7; transform-origin: left center; transition: transform 1s linear; z-index: 1; }
+.ansagen.spricht { color: var(--tinte); }
+.ansagen.spricht svg { opacity: 1; animation: welle 1s ease-in-out infinite; }
+@keyframes welle { 50% { opacity: .35; } }
+.ansagen.ende::after, .ansagen.ende svg { display: none; }
+.name { font-family: var(--schmal); font-weight: 700; font-size: 16vh; line-height: .98; letter-spacing: -.01em; color: var(--tinte); white-space: nowrap; }
+.name span { display: inline-block; transform-origin: left center; }
+
+/* Streckenverlauf */
+.band { position: relative; margin: 0 4vw 9vh; }
+.band .schiene { position: absolute; left: 1.8vh; right: 2.4vh; bottom: 5.3vh; height: 1.6vh; border-radius: .8vh; background: var(--linie); }
+.band.allein { visibility: hidden; }
+.band ol { list-style: none; margin: 0; padding: 0; position: absolute; inset: 0; }
+.band li { position: absolute; bottom: 4.1vh; width: 4vh; height: 4vh; margin-left: -2vh; }
+.band li > i { position: absolute; inset: .3vh; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 .7vh var(--linie); }
+.band li.jetzt > i { inset: -.8vh; box-shadow: inset 0 0 0 1vh var(--linie); }
+.band li.ziel > img { position: absolute; inset: -1.6vh; width: 7.2vh; height: 7.2vh; }
+.band li span { position: absolute; left: 1.4vh; bottom: 6.2vh; transform-origin: left bottom; transform: rotate(-32deg); white-space: nowrap;
+  font-family: var(--schmal); font-weight: 600; font-size: 3.9vh; color: var(--tinte); }
+.band li.jetzt span { font-weight: 700; color: var(--linie); }
+.band li.ziel span { left: auto; right: -1vh; bottom: auto; top: calc(100% + 2.2vh); transform: none; font-weight: 700; font-size: 4.4vh; }
+.band li.mehr { width: 6vh; margin-left: -3vh; }
+.band li.mehr > i { inset: 1.3vh 0; border-radius: 0; box-shadow: none; background: repeating-linear-gradient(90deg, #fff 0 .9vh, transparent .9vh 1.8vh); }
+.band li.mehr span { color: var(--matt); font-weight: 500; font-size: 3.4vh; }
 
 /* ---------- Fahrermenü ---------- */
-.steuer { position: fixed; left: 2vw; right: 2vw; bottom: 2vh; z-index: 10; background: rgba(18,26,34,.92); color: #fff; border-radius: 18px; padding: 14px 16px 16px; box-shadow: 0 10px 30px rgba(0,0,0,.35); font-family: var(--schrift); }
-.st-zeile { display: flex; gap: 16px; align-items: baseline; margin: 0 4px 12px; font-size: 20px; }
-.st-status { flex: 1; font-weight: 700; }
+.steuer { position: fixed; left: 2vw; right: 2vw; bottom: 2vh; z-index: 10; background: rgba(18,26,34,.94); color: #fff; border-radius: 16px; padding: 14px 16px 16px; box-shadow: 0 10px 30px rgba(0,0,0,.35); font-family: var(--schrift); }
+.st-zeile { margin: 0 4px 12px; font-size: 20px; font-weight: 600; }
 .st-knoepfe { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
-.st-knoepfe button small { display: block; font-size: 14px; font-weight: 400; opacity: .8; }
-.st-knoepfe button { min-height: 64px; border-radius: 12px; border: 0; background: #2d3b48; color: #fff; font-weight: 700; font-size: 19px; padding: 6px 10px; line-height: 1.15; }
+.st-knoepfe button { min-height: 64px; border-radius: 12px; border: 0; background: #2d3b48; color: #fff; font-weight: 600; font-size: 18px; padding: 6px 10px; line-height: 1.15; }
+.st-knoepfe button small { display: block; font-size: 14px; font-weight: 500; opacity: .75; }
 .st-knoepfe button.haupt { background: var(--blau); }
 .st-knoepfe button.warn { background: #b3261e; }
-.st-knoepfe button:disabled { opacity: .45; }
-.st-meldung { margin: 12px 4px 0; font-size: 18px; color: #ffe08a; font-weight: 700; }
+.st-knoepfe button:disabled { opacity: .4; }
+.st-meldung { margin: 12px 4px 0; font-size: 18px; color: #ffe08a; font-weight: 600; }
 
 /* ---------- Einstellungen ---------- */
-.einst { border: 0; border-radius: 18px; padding: 0; width: min(720px, 94vw); max-height: 92vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.35); font-family: var(--schrift); color: var(--tinte); }
+.einst { border: 0; border-radius: 16px; padding: 0; width: min(720px, 94vw); max-height: 92vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.35); font-family: var(--schrift); color: var(--tinte); }
 .einst::backdrop { background: rgba(16,24,32,.5); }
-.ei-form { padding: 22px 26px 22px; display: flex; flex-direction: column; gap: 14px; font-size: 19px; }
+.ei-form { padding: 22px 26px; display: flex; flex-direction: column; gap: 14px; font-size: 19px; }
 .ei-form h2 { margin: 0 0 4px; font-size: 26px; }
-.ei-form fieldset { border: 1px solid #d6dee5; border-radius: 12px; padding: 10px 14px; margin: 0; display: flex; flex-direction: column; gap: 8px; }
-.ei-form legend { font-weight: 700; padding: 0 6px; }
 .ei-form label { display: flex; align-items: center; gap: 10px; }
-.ei-form input[type=radio] { width: 22px; height: 22px; }
-.ei-zeile { display: flex !important; align-items: center; justify-content: space-between; gap: 14px; }
-.ei-zeile select { font: inherit; font-size: 18px; padding: 8px 10px; border-radius: 10px; border: 1px solid #b9c5cf; background: #fff; max-width: 60%; }
-.ei-hinweis { margin: 0; color: var(--grau); font-size: 16px; }
 .ei-form input[type=checkbox] { width: 22px; height: 22px; flex: none; }
+.ei-zeile { display: flex !important; align-items: center; justify-content: space-between; gap: 14px; }
+.ei-zeile select { font: inherit; font-size: 18px; padding: 8px 10px; border-radius: 10px; border: 1px solid #b9c5cf; background: #fff; max-width: 55%; }
+.ei-hinweis { margin: 0; color: var(--grau); font-size: 16px; }
 .ei-ende { display: flex; justify-content: flex-end; }
 
 @media (max-width: 700px) {
   .aw-liste { grid-template-columns: 1fr; }
   .st-knoepfe { grid-template-columns: repeat(3, 1fr); }
-  .aw-titel { font-size: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ansagen.spricht svg { animation: none; }
+  .ansagen .zeit { transition: none; }
 }

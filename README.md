@@ -7,12 +7,12 @@ Adresse der App: **https://milo-reisen.github.io/haltestellenansage/**
 
 ## So funktioniert es
 
-1. Der Fahrer tippt den **Fahrplan** an. Die Monitore zeigen die Strecke im Design der bisherigen PowerPoint
-   (Linie oben, nächste Haltestellen in der Mitte, Ziel unten), Paula begrüßt die Fahrgäste.
-2. Neben dem nächsten Halt steht die gelbe Schaltfläche **„Nächste Haltestelle“**. Tippt der Fahrer darauf,
-   sagt Paula „Nächste Haltestelle: …“.
-3. **2 Minuten nach dieser Ansage** rückt die Anzeige von selbst weiter: Der angesagte Halt verschwindet, der
-   folgende Halt steht neben der Schaltfläche. Der grüne Balken unter der Schaltfläche zeigt die Wartezeit.
+1. Der Fahrer tippt den **Fahrplan** an. Die Monitore zeigen oben Linie, Ziel und Uhrzeit, in der Mitte groß
+   die nächste Haltestelle und unten den weiteren Streckenverlauf als Linie. Paula begrüßt die Fahrgäste.
+2. Über dem großen Haltestellennamen steht dezent **„Nächste Haltestelle“** – das ist für den Fahrer die
+   Schaltfläche. Tippt er darauf, sagt Paula „Nächste Haltestelle: …“.
+3. **2 Minuten nach dieser Ansage** rückt die Anzeige von selbst weiter zum folgenden Halt. Der feine Strich unter
+   „Nächste Haltestelle“ zeigt die verbleibende Zeit.
 4. Nach dem Endhalt zeigt die App von selbst die **Rückfahrt** an und begrüßt die neuen Fahrgäste.
 
 Kein GPS nötig. Nochmal Tippen während der Wartezeit wiederholt die Ansage, die 2 Minuten beginnen dann neu.
@@ -87,5 +87,5 @@ Haltestellenansage an, Ansagen mit Paula“.
 
 ## Fremde Bestandteile
 
-Schrift: Carlito (SIL Open Font License, siehe `fonts/OFL-Carlito.txt`), gleich breit wie Calibri aus der PowerPoint.
+Schrift: Barlow und Barlow Semi Condensed (SIL Open Font License, siehe `fonts/OFL-Barlow.txt`).
 SEV-Piktogramm, Haltestellen-Symbol und die ersten S28-Ansagen stammen aus der PowerPoint „Ersatzverkehr S28“ von Milo Reisen.
