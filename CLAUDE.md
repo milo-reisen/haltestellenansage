@@ -8,6 +8,10 @@ Nutzer und Texte sind deutsch; Code-Bezeichner ebenfalls deutsch halten.
   groß in zart getönter Fläche mit feinem Rand, ohne Symbol (Fahrer soll sie als Schaltfläche erkennen, Fahrgästen soll sie
   kaum auffallen) → Ansage; 2 Minuten nach Ende der Ansage rückt die
   Anzeige weiter; nach Endhalt Rückfahrt.
+- Vorher immer `git pull`: Der Admin-Bereich der App (verwaltung.js) löscht Fahrpläne und ändert PINs direkt im
+  Repository über die GitHub-API (Schlüssel nur auf dem Admin-Gerät). Anmeldung: eine Fahrer-PIN für alle (5554),
+  eigene Admin-PIN; in `zugang.json` nur SHA-256 von „milo-hsa:“ + PIN. Fahrer dürfen nichts löschen oder umstellen –
+  Einstellungen nur im Admin-Bereich.
 - Nach jeder Änderung `python3 werkzeug/fertig.py` ausführen (prüft Fahrpläne, setzt Kennungen, `sw.js`, `version.json`),
   dann `node werkzeug/test-fahrt.js`. Erst danach committen.
 - Neuer Fahrplan = eine JSON-Datei je Fahrtrichtung in `strecken/` (Format siehe README), Gegenrichtung über `rueckfahrt`.

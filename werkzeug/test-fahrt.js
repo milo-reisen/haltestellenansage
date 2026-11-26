@@ -60,4 +60,27 @@ for (const d of fs.readdirSync(ordner).filter(x => x.endsWith('.json') && x !== 
   for (let k = 1; k <= g.m; k++) { const x = g.ansage(); assert.ok(x && x.text.includes('Nächste Haltestelle'), d + ': Ansage ' + k); g.weiter(); }
   console.log('  ' + d + ': ' + g.m + ' Ansagen, ' + [s.begruessung, ...s.halte.slice(1).map(h => h.ansage)].filter(x => x && x.ton).length + ' Aufnahmen');
 }
+
+// 8) Verwaltung: Fahrplan löschen – eigene Ansagen weg, gemeinsame bleiben, Rückfahrt-Verweise weg
+const { planeLoeschung } = require('../verwaltung.js');
+const alle = {};
+for (const d of fs.readdirSync(ordner).filter(x => x.endsWith('.json') && x !== 'index.json')) alle[d.slice(0, -5)] = JSON.parse(fs.readFileSync(path.join(ordner, d), 'utf8'));
+let plan = planeLoeschung(alle, 's11-nach-neuss-hbf');
+assert.ok(plan.loeschen.includes('strecken/s11-nach-neuss-hbf.json'));
+assert.ok(plan.loeschen.includes('ton/s11-begruessung-nach-neuss-hbf.mp3'));
+assert.ok(plan.loeschen.includes('ton/s11-endhalt-neuss-hbf.mp3'));
+assert.ok(!plan.loeschen.includes('ton/s11-halt-dormagen.mp3'), 'gemeinsame Ansage darf nicht gelöscht werden');
+assert.deepStrictEqual(plan.rueckVon, ['s11-nach-koeln-worringen']);
+const ohneRueck = JSON.parse(plan.aendern['strecken/s11-nach-koeln-worringen.json']);
+assert.strictEqual(ohneRueck.rueckfahrt, undefined);
+assert.strictEqual(ohneRueck.halte.length, alle['s11-nach-koeln-worringen'].halte.length);
+assert.ok(!JSON.parse(plan.aendern['strecken/index.json']).strecken.includes('s11-nach-neuss-hbf'));
+// unveränderte Teile bleiben Zeichen für Zeichen gleich (gleiche Schreibweise wie werkzeug/fertig.py)
+const vorher = fs.readFileSync(path.join(ordner, 's11-nach-koeln-worringen.json'), 'utf8');
+assert.strictEqual(plan.aendern['strecken/s11-nach-koeln-worringen.json'], vorher.replace(/\n  "rueckfahrt": "s11-nach-neuss-hbf",/, ''));
+plan = planeLoeschung(alle, 's28-nach-mettmann');
+assert.deepStrictEqual(plan.loeschen, ['strecken/s28-nach-mettmann.json']);
+assert.deepStrictEqual(plan.rueckVon, ['s28-nach-vohwinkel']);
+assert.throws(() => planeLoeschung({ a: alle['s28-nach-mettmann'] }, 'a'), /letzte Fahrplan/);
+console.log('  Verwaltung: Löschen geprüft');
 console.log('ALLE TESTS OK');

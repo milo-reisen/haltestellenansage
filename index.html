@@ -10,13 +10,34 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="app.css?v=be33064ce2">
-<script>window.HSA = {"version": "2.4.0", "stand": "2664515cdd"};</script>
+<link rel="stylesheet" href="app.css?v=82b9d01786">
+<script>window.HSA = {"version": "2.5.0", "stand": "043ace6fec"};</script>
 </head>
 <body>
 
+<!-- Anmeldung: Fahrer-PIN (oder Admin-PIN für die Verwaltung) -->
+<main id="anmeldung" class="auswahl anmeldung">
+  <header class="aw-band">
+    <img class="aw-logo" src="logo/schriftzug-hell.png" alt="Milo Reisen">
+    <div class="aw-titel">Haltestellenansage</div>
+  </header>
+  <div class="an-inhalt">
+    <h1 class="an-h">Anmeldung</h1>
+    <p class="an-text">Bitte PIN eingeben</p>
+    <div id="an-punkte" class="an-punkte" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <p id="an-meldung" class="an-meldung" role="alert"></p>
+    <div id="an-tasten" class="an-tasten">
+      <button type="button" data-z="1">1</button><button type="button" data-z="2">2</button><button type="button" data-z="3">3</button>
+      <button type="button" data-z="4">4</button><button type="button" data-z="5">5</button><button type="button" data-z="6">6</button>
+      <button type="button" data-z="7">7</button><button type="button" data-z="8">8</button><button type="button" data-z="9">9</button>
+      <span></span><button type="button" data-z="0">0</button><button type="button" data-z="x" class="an-weg" aria-label="Letzte Ziffer löschen">⌫&#xFE0E;</button>
+    </div>
+  </div>
+  <footer class="aw-fuss"><span id="an-version" class="aw-version"></span></footer>
+</main>
+
 <!-- Fahrplanauswahl (für den Fahrer) -->
-<main id="auswahl" class="auswahl">
+<main id="auswahl" class="auswahl" hidden>
   <header class="aw-band">
     <img class="aw-logo" src="logo/schriftzug-hell.png" alt="Milo Reisen">
     <div class="aw-titel">Haltestellenansage</div>
@@ -26,7 +47,9 @@
     <div id="aw-liste" class="aw-liste"><p class="leer">Fahrpläne werden geladen …</p></div>
   </div>
   <footer class="aw-fuss">
-    <button id="bt-einst" class="zweit" type="button">Einstellungen</button>
+    <button id="bt-tontest" class="zweit" type="button">Testansage</button>
+    <button id="bt-neu" class="zweit" type="button">Neu laden</button>
+    <button id="bt-abmelden" class="zweit" type="button">Abmelden</button>
     <span id="aw-version" class="aw-version"></span>
   </footer>
 </main>
@@ -66,36 +89,92 @@
   <div id="st-meldung" class="st-meldung" hidden></div>
 </div>
 
-<!-- Einstellungen -->
-<dialog id="einst" class="einst">
+<!-- Verwaltung: nur mit Admin-PIN -->
+<main id="verwaltung" class="auswahl verwaltung" hidden>
+  <header class="aw-band">
+    <img class="aw-logo" src="logo/schriftzug-hell.png" alt="Milo Reisen">
+    <div class="aw-titel">Verwaltung</div>
+    <button type="button" id="vw-zu" class="band-knopf">Schließen</button>
+  </header>
+  <div class="aw-inhalt">
+    <div class="vw-spalte">
+      <p id="vw-meldung" class="vw-meldung" role="status" hidden></p>
+
+      <section class="vw-teil">
+        <h2>Fahrpläne</h2>
+        <p class="vw-text">Ein gelöschter Fahrplan verschwindet mit seinen Ansagen von allen Tablets, sobald sie online sind. Die Fahrer können nichts löschen.</p>
+        <div id="vw-liste" class="vw-liste"></div>
+      </section>
+
+      <section class="vw-teil">
+        <h2>PINs ändern</h2>
+        <div class="vw-felder">
+          <label>Neue Fahrer-PIN <input id="vw-pin-fahrer" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></label>
+          <label>Neue Admin-PIN <input id="vw-pin-admin" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></label>
+          <button type="button" id="vw-pin-speichern" class="haupt">PINs speichern</button>
+        </div>
+        <p class="vw-text">Je 4 Ziffern. Was gleich bleiben soll, leer lassen. Gilt für alle Tablets.</p>
+      </section>
+
+      <section class="vw-teil">
+        <h2>GitHub-Schlüssel</h2>
+        <p id="vw-schluessel-status" class="vw-text"></p>
+        <div class="vw-felder">
+          <input id="vw-schluessel" class="vw-lang" type="password" placeholder="github_pat_…" autocomplete="off" spellcheck="false" aria-label="GitHub-Schlüssel">
+          <button type="button" id="vw-schluessel-speichern" class="haupt">Speichern</button>
+          <button type="button" id="vw-schluessel-weg" class="zweit" hidden>Von diesem Gerät entfernen</button>
+        </div>
+        <p class="vw-text">Der Schlüssel bleibt nur auf diesem Gerät gespeichert. Trag ihn am Büro-PC ein, nicht auf den Tablets im Bus.</p>
+        <details class="vw-hilfe">
+          <summary>So bekommst du einen Schlüssel</summary>
+          <ol>
+            <li>Bei GitHub anmelden und <b>github.com/settings/personal-access-tokens/new</b> öffnen.</li>
+            <li>Name eintragen, zum Beispiel „Haltestellenansage Verwaltung“, und ein Ablaufdatum wählen.</li>
+            <li>Bei „Resource owner“ <b>milo-reisen</b> wählen, bei „Repository access“ nur <b>haltestellenansage</b>.</li>
+            <li>Unter „Permissions“ bei „Contents“ <b>Read and write</b> einstellen.</li>
+            <li>„Generate token“ antippen und den Schlüssel hier einfügen.</li>
+          </ol>
+        </details>
+      </section>
+
+      <section class="vw-teil" id="vw-tablet">
+        <h2>Einstellungen für dieses Tablet</h2>
+        <div class="ei-form vw-einst">
+          <label class="ei-zeile">Nach der Ansage wechselt die Anzeige zum nächsten Halt nach
+            <select id="ei-wechsel">
+              <option value="60">1 Minute</option>
+              <option value="90">1½ Minuten</option>
+              <option value="120" selected>2 Minuten</option>
+              <option value="180">3 Minuten</option>
+              <option value="300">5 Minuten</option>
+              <option value="10">10 Sekunden (zum Ausprobieren)</option>
+            </select>
+          </label>
+          <label><input type="checkbox" id="ei-begr" checked> Begrüßung abspielen, wenn der Fahrplan angetippt wird</label>
+          <label><input type="checkbox" id="ei-autorueck" checked> Nach dem Endhalt von selbst die Rückfahrt anzeigen</label>
+          <div class="ei-zeile">
+            <span id="ei-version"></span>
+            <button type="button" id="ei-tontest" class="zweit">Testansage</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<dialog id="vw-frage" class="einst">
   <form method="dialog" class="ei-form">
-    <h2>Einstellungen</h2>
-    <label class="ei-zeile">Nach der Ansage wechselt die Anzeige zum nächsten Halt nach
-      <select id="ei-wechsel">
-        <option value="60">1 Minute</option>
-        <option value="90">1½ Minuten</option>
-        <option value="120" selected>2 Minuten</option>
-        <option value="180">3 Minuten</option>
-        <option value="300">5 Minuten</option>
-        <option value="10">10 Sekunden (zum Ausprobieren)</option>
-      </select>
-    </label>
-    <label><input type="checkbox" id="ei-begr" checked> Begrüßung abspielen, wenn der Fahrplan angetippt wird</label>
-    <label><input type="checkbox" id="ei-autorueck" checked> Nach dem Endhalt von selbst die Rückfahrt anzeigen</label>
-    <div class="ei-zeile">
-      <span>Lautsprecher prüfen</span>
-      <button type="button" id="ei-tontest" class="zweit">Testansage</button>
+    <h2 id="vw-frage-titel"></h2>
+    <p id="vw-frage-text" class="vw-frage-text"></p>
+    <div class="ei-ende">
+      <button class="zweit" value="nein">Abbrechen</button>
+      <button id="vw-frage-ja" class="warnknopf" value="ja">Löschen</button>
     </div>
-    <div class="ei-zeile">
-      <span id="ei-version"></span>
-      <button type="button" id="ei-neu" class="zweit">Neu laden</button>
-    </div>
-    <p class="ei-hinweis">Die Lautstärke stellst du mit den Lautstärketasten am Tablet ein.</p>
-    <div class="ei-ende"><button class="haupt" value="ok">Fertig</button></div>
   </form>
 </dialog>
 
 <script src="fahrt.js?v=9535e2f8e5"></script>
-<script src="app.js?v=e1ec270f0f"></script>
+<script src="app.js?v=e40e52ac1f"></script>
+<script src="verwaltung.js?v=7e7f5c395e"></script>
 </body>
 </html>

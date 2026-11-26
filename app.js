@@ -95,6 +95,83 @@
     if (!document.fullscreenElement && el.requestFullscreen && !matchMedia('(display-mode: fullscreen)').matches) el.requestFullscreen({ navigationUI: 'hide' }).catch(() => {});
   }
 
+  /* ---------- Bildschirme ---------- */
+  function zeige(welcher) {
+    for (const id of ['anmeldung', 'auswahl', 'anzeige', 'verwaltung']) $('#' + id).hidden = id !== welcher;
+  }
+
+  /* ---------- Anmeldung: eine PIN für alle Fahrer, eine eigene für den Admin ----------
+   * In zugang.json stehen nur Prüfsummen der PINs. Die Fahrer-Anmeldung hält 12 Stunden (oder bis „Abmelden“). */
+  const ANGEMELDET_MS = 12 * 60 * 60 * 1000;
+  const ZUGANG_ERSATZ = { fahrer: 'dd5263a0d4f796f5aa88248cbcae56c475a68904ea07ae7e8983f7ae9aea704f' };   // falls zugang.json fehlt
+  let zugang = null;
+  async function aktualisiereZugang() {
+    try { zugang = await (await fetch('zugang.json', { cache: 'no-cache' })).json(); }
+    catch (e) { if (!zugang) zugang = ZUGANG_ERSATZ; }
+    return zugang;
+  }
+  async function pinHash(pin) {
+    const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('milo-hsa:' + pin));
+    return Array.from(new Uint8Array(b), x => x.toString(16).padStart(2, '0')).join('');
+  }
+  const angemeldet = () => Number(lies('hsa.anmeldung', 0)) > Date.now();
+
+  let pin = '', fehlversuche = 0, gesperrtBis = 0;
+  function zeichnePin() {
+    $('#an-punkte').querySelectorAll('i').forEach((p, i) => p.classList.toggle('voll', i < pin.length));
+  }
+  function zeigeAnmeldung(text) {
+    pin = ''; zeichnePin();
+    $('#an-meldung').textContent = text || '';
+    zeige('anmeldung');
+  }
+  function pinMeldung(text) {
+    pin = ''; zeichnePin();
+    $('#an-meldung').textContent = text;
+    const p = $('#an-punkte');
+    p.classList.remove('falsch'); void p.offsetWidth; p.classList.add('falsch');
+  }
+  async function pruefePin() {
+    const z = zugang || await aktualisiereZugang();
+    let h;
+    try { h = await pinHash(pin); } catch (e) { pinMeldung('Die Anmeldung geht nur über https://milo-reisen.github.io/haltestellenansage/'); return; }
+    if (h === z.fahrer) {
+      fehlversuche = 0;
+      schreib('hsa.anmeldung', Date.now() + ANGEMELDET_MS);
+      pin = ''; zeichnePin(); $('#an-meldung').textContent = '';
+      zeigeAuswahl();
+    } else if (z.admin && h === z.admin) {
+      fehlversuche = 0;
+      pin = ''; zeichnePin(); $('#an-meldung').textContent = '';
+      window.HSAVerwaltung.oeffne();
+    } else if (++fehlversuche >= 5) {
+      gesperrtBis = Date.now() + 30000; fehlversuche = 0;
+      pinMeldung('Zu viele falsche Versuche. Bitte 30 Sekunden warten.');
+    } else pinMeldung('Falsche PIN. Bitte noch einmal.');
+  }
+  function tippe(z) {
+    if ($('#anmeldung').hidden) return;
+    if (Date.now() < gesperrtBis) { $('#an-meldung').textContent = 'Zu viele falsche Versuche. Bitte 30 Sekunden warten.'; return; }
+    if (z === 'x') pin = pin.slice(0, -1);
+    else if (pin.length < 4) pin += z;
+    if (pin.length) $('#an-meldung').textContent = '';
+    zeichnePin();
+    if (pin.length === 4) pruefePin();
+  }
+  $('#an-tasten').addEventListener('click', e => { const b = e.target.closest('button[data-z]'); if (b) tippe(b.dataset.z); });
+  document.addEventListener('keydown', e => {
+    if ($('#anmeldung').hidden) return;
+    if (/^[0-9]$/.test(e.key)) tippe(e.key);
+    else if (e.key === 'Backspace') tippe('x');
+  });
+  function abmelden() { schreib('hsa.anmeldung', 0); zeigeAnmeldung(); }
+
+  function zeigeAuswahl() {
+    if (!angemeldet()) { zeigeAnmeldung(); return; }
+    zeige('auswahl');
+    zeichneListe();
+  }
+
   /* ---------- Fahrpläne laden ---------- */
   async function ladeStrecken() {
     const liste = await (await fetch('strecken/index.json', { cache: 'no-cache' })).json();
@@ -104,6 +181,21 @@
     }));
     strecken = geladen.filter(Boolean);
   }
+
+  /* Gelöschte oder neue Fahrpläne und geänderte PINs kommen ohne Neustart an – nur wenn keine Fahrt läuft. */
+  let streckenStand = '';
+  async function aktualisiereStrecken(sofort) {
+    if (aktiv && !sofort) return;
+    aktualisiereZugang();
+    try {
+      await ladeStrecken();
+      const neu = JSON.stringify(strecken);
+      if (neu !== streckenStand) { streckenStand = neu; if (!$('#auswahl').hidden) zeichneListe(); }
+    } catch (e) { /* offline: alte Liste bleibt */ }
+    if (!aktiv && !$('#auswahl').hidden && !angemeldet()) zeigeAnmeldung();
+  }
+  setInterval(aktualisiereStrecken, 5 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') aktualisiereStrecken(); });
 
   /* ---------- Fahrplanauswahl ---------- */
   function zeichneListe() {
@@ -150,7 +242,7 @@
     const art = (s.kopf || '').replace(s.linie || '', '').trim();   // „Ersatzverkehr S11“ → „Ersatzverkehr“
     $('#az-art').textContent = (art ? art + ' ' : '') + 'nach';
     $('#az-ziel').textContent = s.ziel || s.halte[s.halte.length - 1].name;
-    $('#auswahl').hidden = true; $('#anzeige').hidden = false;
+    zeige('anzeige');
     versteckeSteuerung();
     zeichneAnzeige();
     if (einst.begruessung) Ton.spiele(fahrt.begruessung());
@@ -164,8 +256,7 @@
     wachSperre = null;
     if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
     versteckeSteuerung();
-    $('#anzeige').hidden = true; $('#auswahl').hidden = false;
-    zeichneListe();
+    zeigeAuswahl();
     pruefeVersion();
   }
 
@@ -350,23 +441,33 @@
     zeigeStatus();
   });
 
-  /* ---------- Einstellungen ---------- */
-  function oeffneEinstellungen() {
+  /* ---------- Einstellungen für dieses Tablet (nur im Admin-Bereich) ---------- */
+  function zeigeEinstellungen() {
     $('#ei-wechsel').value = String(einst.wechselSek);
     $('#ei-begr').checked = !!einst.begruessung;
     $('#ei-autorueck').checked = !!einst.autoRueck;
-    $('#ei-version').textContent = 'Version ' + CFG.version + (CFG.stand ? ' · Stand ' + CFG.stand : '');
-    $('#einst').showModal();
   }
-  $('#einst').addEventListener('change', () => {
+  $('#vw-tablet').addEventListener('change', () => {
     einst.wechselSek = Number($('#ei-wechsel').value) || 120;
     einst.begruessung = $('#ei-begr').checked;
     einst.autoRueck = $('#ei-autorueck').checked;
     schreib('hsa.einst2', einst);
   });
-  $('#ei-tontest').addEventListener('click', () => { Ton.freischalten(); Ton.stopp(); Ton.spiele({ datei: 'ton/s28-begruessung-nach-vohwinkel.mp3', text: 'Dies ist eine Testansage.' }); });
-  $('#ei-neu').addEventListener('click', () => location.reload());
-  $('#bt-einst').addEventListener('click', oeffneEinstellungen);
+
+  /* ---------- Fußleiste der Fahrplanauswahl ---------- */
+  function testTon() {
+    // erste Aufnahme eines vorhandenen Fahrplans, sonst Computerstimme
+    for (const s of strecken) {
+      const t = [s.begruessung, ...s.halte.map(h => h.ansage)].find(x => x && x.ton);
+      if (t) return { datei: t.ton, text: t.text };
+    }
+    return { text: 'Dies ist eine Testansage.' };
+  }
+  const tonTest = () => { Ton.freischalten(); Ton.stopp(); Ton.spiele(testTon()); };
+  $('#bt-tontest').addEventListener('click', tonTest);
+  $('#ei-tontest').addEventListener('click', tonTest);
+  $('#bt-neu').addEventListener('click', () => location.reload());
+  $('#bt-abmelden').addEventListener('click', abmelden);
 
   /* ---------- Neue Version holen (nur wenn keine Fahrt läuft) ---------- */
   async function pruefeVersion() {
@@ -380,10 +481,20 @@
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') pruefeVersion(); });
 
   /* ---------- Start ---------- */
-  $('#aw-version').textContent = 'Version ' + CFG.version;
+  const versionText = 'Version ' + CFG.version;
+  $('#aw-version').textContent = versionText;
+  $('#an-version').textContent = versionText;
+  $('#ei-version').textContent = versionText + (CFG.stand ? ' · Stand ' + CFG.stand : '');
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) navigator.serviceWorker.register('sw.js').catch(() => {});
-  ladeStrecken().then(zeichneListe).catch(e => { $('#aw-liste').innerHTML = '<p class="leer">Fahrpläne konnten nicht geladen werden.</p>'; console.error(e); });
+  aktualisiereZugang();
+  if (angemeldet()) zeige('auswahl'); else zeigeAnmeldung();
+  ladeStrecken().then(() => { streckenStand = JSON.stringify(strecken); zeichneListe(); })
+    .catch(e => { $('#aw-liste').innerHTML = '<p class="leer">Fahrpläne konnten nicht geladen werden.</p>'; console.error(e); });
 
-  // Für Tests im Browser
-  window.HSAApp = { starteFahrt, beendeFahrt, sageAn, get fahrt() { return fahrt; }, zeigeSteuerung, Ton };
+  // für den Admin-Bereich (verwaltung.js) und für Tests im Browser
+  window.HSAApp = {
+    starteFahrt, beendeFahrt, sageAn, get fahrt() { return fahrt; }, zeigeSteuerung, Ton,
+    get strecken() { return strecken; }, zeige, zeigeAnmeldung, zeigeEinstellungen, pinHash,
+    aktualisiereStrecken, aktualisiereZugang
+  };
 })();

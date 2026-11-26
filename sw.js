@@ -1,10 +1,16 @@
 /* Gerätespeicher der App: damit sie auch ohne Netz startet und alle Ansagen abspielt.
  * Die Zeile mit CACHE und DATEIEN schreibt werkzeug/fertig.py – nicht von Hand ändern. */
-const CACHE = "hsa-2.4.0-2664515cdd", DATEIEN = ["app.css?v=be33064ce2", "fahrt.js?v=9535e2f8e5", "app.js?v=e1ec270f0f", "manifest.webmanifest", "strecken/index.json", "strecken/s11-nach-duesseldorf-hbf.json", "strecken/s11-nach-koeln-worringen.json", "strecken/s11-nach-neuss-hbf.json", "strecken/s28-nach-mettmann.json", "strecken/s28-nach-vohwinkel.json", "fonts/barlow-latin-500-normal.woff2", "fonts/barlow-latin-600-normal.woff2", "fonts/barlow-semi-condensed-latin-500-normal.woff2", "fonts/barlow-semi-condensed-latin-600-normal.woff2", "fonts/barlow-semi-condensed-latin-700-normal.woff2", "bilder/haltestelle.png", "bilder/sev.png", "logo/emblem-256.png", "logo/schriftzug-hell.png", "logo/schriftzug.png", "icons/apple-touch-icon.png", "icons/favicon-32.png", "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-192.png", "icons/maskable-512.png", "ton/s11-begruessung-nach-duesseldorf-hbf.mp3", "ton/s11-begruessung-nach-koeln-worringen.mp3", "ton/s11-begruessung-nach-neuss-hbf.mp3", "ton/s11-endhalt-duesseldorf-hbf.mp3", "ton/s11-endhalt-koeln-worringen.mp3", "ton/s11-endhalt-neuss-hbf.mp3", "ton/s11-halt-dormagen-chempark.mp3", "ton/s11-halt-dormagen.mp3", "ton/s11-halt-duesseldorf-bilk.mp3", "ton/s11-halt-duesseldorf-friedrichstadt.mp3", "ton/s11-halt-duesseldorf-hamm.mp3", "ton/s11-halt-duesseldorf-voelklinger-strasse.mp3", "ton/s11-halt-neuss-allerheiligen.mp3", "ton/s11-halt-neuss-am-kaiser.mp3", "ton/s11-halt-neuss-hbf.mp3", "ton/s11-halt-neuss-norf.mp3", "ton/s11-halt-neuss-rheinparkcenter.mp3", "ton/s11-halt-neuss-sued.mp3", "ton/s11-halt-nievenheim.mp3", "ton/s28-begruessung-nach-vohwinkel.mp3", "ton/s28-naechster-halt-hahnenfurth.mp3", "ton/s28-naechster-halt-vohwinkel-endhalt.mp3"];
+const CACHE = "hsa-2.5.0-043ace6fec", DATEIEN = ["app.css?v=82b9d01786", "fahrt.js?v=9535e2f8e5", "app.js?v=e40e52ac1f", "verwaltung.js?v=7e7f5c395e", "manifest.webmanifest", "zugang.json", "strecken/index.json", "strecken/s11-nach-duesseldorf-hbf.json", "strecken/s11-nach-koeln-worringen.json", "strecken/s11-nach-neuss-hbf.json", "strecken/s28-nach-mettmann.json", "strecken/s28-nach-vohwinkel.json", "fonts/barlow-latin-500-normal.woff2", "fonts/barlow-latin-600-normal.woff2", "fonts/barlow-semi-condensed-latin-500-normal.woff2", "fonts/barlow-semi-condensed-latin-600-normal.woff2", "fonts/barlow-semi-condensed-latin-700-normal.woff2", "bilder/haltestelle.png", "bilder/sev.png", "logo/emblem-256.png", "logo/schriftzug-hell.png", "logo/schriftzug.png", "icons/apple-touch-icon.png", "icons/favicon-32.png", "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-192.png", "icons/maskable-512.png", "ton/s11-begruessung-nach-duesseldorf-hbf.mp3", "ton/s11-begruessung-nach-koeln-worringen.mp3", "ton/s11-begruessung-nach-neuss-hbf.mp3", "ton/s11-endhalt-duesseldorf-hbf.mp3", "ton/s11-endhalt-koeln-worringen.mp3", "ton/s11-endhalt-neuss-hbf.mp3", "ton/s11-halt-dormagen-chempark.mp3", "ton/s11-halt-dormagen.mp3", "ton/s11-halt-duesseldorf-bilk.mp3", "ton/s11-halt-duesseldorf-friedrichstadt.mp3", "ton/s11-halt-duesseldorf-hamm.mp3", "ton/s11-halt-duesseldorf-voelklinger-strasse.mp3", "ton/s11-halt-neuss-allerheiligen.mp3", "ton/s11-halt-neuss-am-kaiser.mp3", "ton/s11-halt-neuss-hbf.mp3", "ton/s11-halt-neuss-norf.mp3", "ton/s11-halt-neuss-rheinparkcenter.mp3", "ton/s11-halt-neuss-sued.mp3", "ton/s11-halt-nievenheim.mp3", "ton/s28-begruessung-nach-vohwinkel.mp3", "ton/s28-naechster-halt-hahnenfurth.mp3", "ton/s28-naechster-halt-vohwinkel-endhalt.mp3"];
 const PRAEFIX = 'hsa-';
 const BASIS = './';
 
-const vorrat = c => c.addAll([BASIS].concat(DATEIEN));
+/* Programm, Bilder und Schrift müssen alle da sein. Fahrpläne, Ansagen und zugang.json einzeln holen:
+ * Löscht der Admin einen Fahrplan, fehlen dessen Dateien, bis werkzeug/fertig.py die Liste neu schreibt. */
+const INHALT = d => /^(strecken|ton)\//.test(d) || d === 'zugang.json';
+const vorrat = async c => {
+  await c.addAll([BASIS].concat(DATEIEN.filter(d => !INHALT(d))));
+  await Promise.all(DATEIEN.filter(INHALT).map(d => c.add(d).catch(() => {})));
+};
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(vorrat).then(() => self.skipWaiting()));
@@ -38,9 +44,10 @@ self.addEventListener('fetch', e => {
   if (u.origin !== location.origin) return;
   if (/\/version\.json$/.test(u.pathname)) return;                       // immer frisch aus dem Netz
 
-  // Startseite und Strecken: zuerst Netz (neue Strecken kommen sofort an), sonst Gerätespeicher
-  if (req.mode === 'navigate' || /\/strecken\/[^/]+\.json$/.test(u.pathname)) {
-    const schluessel = req.mode === 'navigate' ? BASIS : u.pathname.replace(/^.*\/(strecken\/)/, '$1');
+  // Startseite, Fahrpläne und PINs: zuerst Netz (Änderungen kommen sofort an), sonst Gerätespeicher
+  const inhalt = /\/(strecken\/[^/]+\.json|zugang\.json)$/.exec(u.pathname);
+  if (req.mode === 'navigate' || inhalt) {
+    const schluessel = req.mode === 'navigate' ? BASIS : inhalt[1];
     e.respondWith(fetch(req).then(res => {
       if (res.ok) { const kopie = res.clone(); caches.open(CACHE).then(c => c.put(schluessel, kopie)); }
       return res;

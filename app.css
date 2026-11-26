@@ -50,6 +50,59 @@ button { font: inherit; cursor: pointer; }
 .zweit { background: #fff; color: var(--blau); border: 2px solid var(--blau); border-radius: 12px; min-height: 48px; padding: 0 18px; font-weight: 600; font-size: 18px; }
 .haupt { background: var(--blau); color: #fff; border: 0; border-radius: 12px; min-height: 52px; padding: 0 22px; font-weight: 600; font-size: 19px; }
 
+input, select { user-select: text; -webkit-user-select: text; }
+
+/* ---------- Anmeldung (PIN) ----------
+   Das Bild geht auch auf die Monitore im Bus: Tasten leuchten beim Antippen nicht auf,
+   nur die Punkte füllen sich – so sieht niemand, welche Ziffern getippt werden. */
+.an-inhalt { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px 26px; min-height: 0; }
+.an-h { margin: 0; font-size: 30px; font-weight: 600; }
+.an-text { margin: 4px 0 18px; font-size: 19px; color: var(--grau); }
+.an-punkte { display: flex; gap: 22px; height: 26px; align-items: center; }
+.an-punkte i { width: 20px; height: 20px; border-radius: 50%; border: 2.5px solid var(--blau); background: transparent; }
+.an-punkte i.voll { background: var(--blau); }
+.an-punkte.falsch { animation: wackeln .4s ease-in-out; }
+.an-punkte.falsch i { border-color: #b3261e; }
+@keyframes wackeln { 20% { transform: translateX(-10px); } 40% { transform: translateX(9px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(4px); } }
+.an-meldung { min-height: 26px; margin: 12px 0 10px; font-size: 18px; font-weight: 600; color: #b3261e; text-align: center; }
+.an-tasten { display: grid; grid-template-columns: repeat(3, min(104px, 11vh)); gap: min(16px, 1.8vh); }
+.an-tasten button { height: min(80px, 9.6vh); border: 0; border-radius: 16px; background: #fff; color: var(--tinte);
+  box-shadow: 0 1px 2px rgba(16,32,48,.10), 0 3px 10px rgba(16,32,48,.06);
+  font-family: var(--schmal); font-size: min(36px, 4.6vh); font-weight: 600; }
+.an-tasten .an-weg { background: transparent; box-shadow: none; color: var(--grau); }
+.an-tasten button:focus { outline: none; }
+.an-tasten button:focus-visible { outline: 3px solid var(--blau); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .an-punkte.falsch { animation: none; } }
+
+/* ---------- Verwaltung (Admin) ---------- */
+.band-knopf { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,.75); border-radius: 12px; min-height: 44px; padding: 0 18px; font-weight: 600; font-size: 18px; }
+.vw-spalte { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; padding-bottom: 20px; }
+.vw-teil { background: #fff; border-radius: 14px; padding: 18px 22px 20px; box-shadow: 0 1px 2px rgba(16,32,48,.08), 0 4px 14px rgba(16,32,48,.06); }
+.vw-teil h2 { margin: 0 0 6px; font-size: 24px; }
+.vw-text { margin: 6px 0; font-size: 17px; color: var(--grau); line-height: 1.35; }
+.vw-meldung { margin: 0; padding: 12px 16px; border-radius: 12px; font-size: 18px; font-weight: 600; line-height: 1.35; background: var(--blau-hell); color: var(--blau); }
+.vw-meldung.ok { background: #e3f6e8; color: #17672e; }
+.vw-meldung.fehler { background: #fde7e5; color: #8c1d16; }
+.vw-liste { margin-top: 8px; }
+.vw-zeile { display: flex; align-items: center; gap: 16px; padding: 12px 0; border-top: 1px solid #e3e9ee; }
+.vw-plakette { flex: none; min-width: 72px; padding: 8px 10px; border-radius: 10px; color: #fff; text-align: center; font-family: var(--schmal); font-size: 26px; font-weight: 700; }
+.vw-was { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.vw-was b { font-family: var(--schmal); font-size: 26px; font-weight: 700; line-height: 1.1; }
+.vw-was small { font-size: 16px; color: var(--grau); }
+.loeschen { flex: none; background: #fff; color: #b3261e; border: 2px solid #b3261e; border-radius: 12px; min-height: 48px; padding: 0 18px; font-weight: 600; font-size: 18px; }
+.loeschen:disabled, .haupt:disabled, .zweit:disabled { opacity: .45; cursor: default; }
+.vw-felder { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin: 10px 0 4px; }
+.vw-felder label { display: flex; flex-direction: column; gap: 6px; font-size: 16px; font-weight: 600; color: var(--grau); }
+.vw-felder input { font: inherit; font-size: 20px; padding: 10px 12px; border: 1px solid #b9c5cf; border-radius: 10px; width: 190px; color: var(--tinte); background: #fff; }
+.vw-felder input.vw-lang { flex: 1; min-width: 280px; width: auto; }
+.vw-hilfe { margin-top: 8px; font-size: 17px; color: var(--tinte); }
+.vw-hilfe summary { cursor: pointer; color: var(--blau); font-weight: 600; }
+.vw-hilfe ol { margin: 8px 0 0; padding-left: 22px; line-height: 1.5; }
+.ei-form.vw-einst { padding: 6px 0 0; }
+.vw-frage-text { margin: 0; font-size: 18px; line-height: 1.4; color: var(--tinte); }
+.ei-ende { gap: 12px; }
+.warnknopf { background: #b3261e; color: #fff; border: 0; border-radius: 12px; min-height: 52px; padding: 0 22px; font-weight: 600; font-size: 19px; }
+
 /* ---------- Fahrgastanzeige ---------- */
 .anzeige { position: fixed; inset: 0; background: #fff; overflow: hidden; display: grid; grid-template-rows: 15vh 1fr 33vh; }
 

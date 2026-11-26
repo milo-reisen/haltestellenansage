@@ -21,14 +21,27 @@ Kein GPS nötig. Nochmal Tippen während der Wartezeit wiederholt die Ansage, di
 **Fahrermenü:** einmal irgendwo auf die Anzeige tippen (verschwindet nach 10 Sekunden von selbst):
 Halt zurück · Halt weiter (ohne Ansage) · Ansage wiederholen · Begrüßung abspielen · Rückfahrt · Fahrt beenden (zweimal tippen).
 
-**Einstellungen** (auf der Startseite): Wechselzeit (1–5 Minuten, oder 10 Sekunden zum Ausprobieren im Büro),
-Begrüßung beim Start an/aus, Rückfahrt von selbst an/aus, Testansage.
+**Anmeldung:** Beim Start fragt die App nach der PIN. Alle Fahrer haben dieselbe Fahrer-PIN; die Anmeldung hält
+12 Stunden oder bis „Abmelden“. Auf der Fahrplanauswahl gibt es nur *Testansage*, *Neu laden* und *Abmelden* –
+Fahrer können nichts löschen und nichts umstellen.
+
+**Verwaltung (Admin):** Auf dem Anmeldebildschirm die Admin-PIN eingeben. Dort lassen sich
+- Fahrpläne mit ihren Ansagen **löschen** – gilt für alle Tablets, sobald sie online sind (gemeinsam genutzte
+  Ansagen bleiben, ein Rückfahrt-Verweis der Gegenrichtung wird entfernt),
+- Fahrer-PIN und Admin-PIN **ändern** (in `zugang.json` stehen nur Prüfsummen),
+- die **Einstellungen für dieses Tablet** ändern: Wechselzeit (1–5 Minuten, oder 10 Sekunden zum Ausprobieren),
+  Begrüßung beim Start an/aus, Rückfahrt von selbst an/aus.
+
+Löschen und PIN ändern schreiben direkt ins GitHub-Repository. Dafür braucht das Gerät einen **GitHub-Schlüssel**
+(fine-grained token, nur Repository `haltestellenansage`, „Contents: Read and write“). Er wird nur auf diesem Gerät
+gespeichert – am Büro-PC eintragen, nicht auf den Bus-Tablets. Ohne Schlüssel kann niemand etwas löschen, auch wenn
+er die Admin-PIN kennt. Die PIN ist nur eine Sperre gegen versehentliches Verstellen.
 
 ## Tablet einrichten (einmalig)
 
 1. Auf dem Tablet **Chrome** öffnen und die Adresse oben aufrufen.
 2. Menü (⋮) → **„App installieren“** bzw. „Zum Startbildschirm hinzufügen“. Danach liegt „Ansage“ als App auf dem Tablet.
-3. In der App unter *Einstellungen → Testansage* prüfen, ob der Ton aus den Monitoren kommt. Lautstärke mit den Tasten am Tablet.
+3. Mit der Fahrer-PIN anmelden und mit *Testansage* prüfen, ob der Ton aus den Monitoren kommt. Lautstärke mit den Tasten am Tablet.
 4. Einmal kurz mit Internet öffnen – danach läuft alles auch ohne Netz. Neue Fahrpläne kommen von selbst, sobald
    das Tablet wieder Internet hat und gerade keine Fahrt läuft.
 
@@ -74,6 +87,7 @@ Haltestellenansage an, Ansagen mit Paula“.
 
 ## Neue Version veröffentlichen
 
+0. Zuerst `git pull` – die Verwaltung in der App ändert das Repository direkt (gelöschte Fahrpläne, PINs).
 1. Dateien ändern (Fahrpläne, Ansagen, `app.js`, `app.css` …).
 2. `python3 werkzeug/fertig.py` ausführen (prüft alle Fahrpläne und Ansage-Dateien, setzt Kennungen, Dateiliste für
    den Offline-Speicher und `version.json`). Neue Versionsnummer: `--version 2.1.0`.
@@ -82,7 +96,8 @@ Haltestellenansage an, Ansagen mit Paula“.
 
 ## Dateien
 
-- `index.html`, `app.css`, `app.js` – Oberfläche, Ton, Bedienung
+- `index.html`, `app.css`, `app.js` – Oberfläche, Ton, Bedienung, Anmeldung
+- `verwaltung.js` – Admin-Bereich (Löschen, PINs) über die GitHub-API; `zugang.json` – Prüfsummen der PINs
 - `fahrt.js` – Ablauf einer Fahrt (Schaltfläche, Wechselzeit), ohne Bildschirm – in Node testbar
 - `sw.js` – Offline-Speicher; `strecken/` – Fahrpläne; `ton/` – Ansagen; `bilder/` – SEV-Piktogramm, Haltestellen-Symbol
 
