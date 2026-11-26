@@ -1,0 +1,76 @@
+{
+  "linie": "S11",
+  "kopf": "Ersatzverkehr S11",
+  "farbe": "#9C1963",
+  "symbol": "bilder/sev.png",
+  "ziel": "Köln-Worringen",
+  "rueckfahrt": "s11-nach-neuss-hbf",
+  "ansageVorHalt": 400,
+  "begruessung": {
+    "text": "Sehr geehrte Fahrgäste, wir begrüßen Sie im Schienenersatzverkehr der Linie S11. Dieser Bus fährt über Neuss Süd, Neuss-Norf, Neuss Allerheiligen, Nievenheim, Dormagen und Dormagen Chempark nach Köln-Worringen. Milo Reisen wünscht Ihnen einen schönen Tag. Bis bald. Nächste Haltestelle: Neuss Süd."
+  },
+  "halte": [
+    {
+      "name": "Neuss Hbf",
+      "lat": 51.203962,
+      "lon": 6.685509,
+      "sprich": "Neuss Hauptbahnhof"
+    },
+    {
+      "name": "Neuss Süd",
+      "lat": 51.18575,
+      "lon": 6.68925,
+      "ansage": {
+        "text": "Nächste Haltestelle: Neuss Süd."
+      }
+    },
+    {
+      "name": "Neuss-Norf",
+      "lat": 51.160907,
+      "lon": 6.731631,
+      "ansage": {
+        "text": "Nächste Haltestelle: Neuss-Norf."
+      }
+    },
+    {
+      "name": "Neuss Allerheiligen",
+      "lat": 51.142436,
+      "lon": 6.756699,
+      "ansage": {
+        "text": "Nächste Haltestelle: Neuss Allerheiligen."
+      }
+    },
+    {
+      "name": "Nievenheim",
+      "lat": 51.123696,
+      "lon": 6.783607,
+      "ansage": {
+        "text": "Nächste Haltestelle: Nievenheim."
+      }
+    },
+    {
+      "name": "Dormagen",
+      "lat": 51.099282,
+      "lon": 6.816974,
+      "ansage": {
+        "text": "Nächste Haltestelle: Dormagen."
+      }
+    },
+    {
+      "name": "Dormagen Chempark",
+      "lat": 51.076956,
+      "lon": 6.838029,
+      "ansage": {
+        "text": "Nächste Haltestelle: Dormagen Chempark."
+      }
+    },
+    {
+      "name": "Köln-Worringen",
+      "lat": 51.052369,
+      "lon": 6.852289,
+      "ansage": {
+        "text": "Nächste Haltestelle: Köln-Worringen. Diese Linie endet hier. Wir bitten alle Fahrgäste auszusteigen. Hier haben Sie Anschluss an die S-Bahn S11 in Richtung Köln. Milo Reisen wünscht Ihnen einen schönen Tag. Bis bald!"
+      }
+    }
+  ]
+}

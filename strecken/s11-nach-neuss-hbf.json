@@ -1,0 +1,76 @@
+{
+  "linie": "S11",
+  "kopf": "Ersatzverkehr S11",
+  "farbe": "#9C1963",
+  "symbol": "bilder/sev.png",
+  "ziel": "Neuss Hbf",
+  "rueckfahrt": "s11-nach-koeln-worringen",
+  "ansageVorHalt": 400,
+  "begruessung": {
+    "text": "Sehr geehrte Fahrgäste, wir begrüßen Sie im Schienenersatzverkehr der Linie S11. Dieser Bus fährt über Dormagen Chempark, Dormagen, Nievenheim, Neuss Allerheiligen, Neuss-Norf und Neuss Süd nach Neuss Hauptbahnhof. Milo Reisen wünscht Ihnen einen schönen Tag. Bis bald. Nächste Haltestelle: Dormagen Chempark."
+  },
+  "halte": [
+    {
+      "name": "Köln-Worringen",
+      "lat": 51.052369,
+      "lon": 6.852289
+    },
+    {
+      "name": "Dormagen Chempark",
+      "lat": 51.076956,
+      "lon": 6.838029,
+      "ansage": {
+        "text": "Nächste Haltestelle: Dormagen Chempark."
+      }
+    },
+    {
+      "name": "Dormagen",
+      "lat": 51.099282,
+      "lon": 6.816974,
+      "ansage": {
+        "text": "Nächste Haltestelle: Dormagen."
+      }
+    },
+    {
+      "name": "Nievenheim",
+      "lat": 51.123696,
+      "lon": 6.783607,
+      "ansage": {
+        "text": "Nächste Haltestelle: Nievenheim."
+      }
+    },
+    {
+      "name": "Neuss Allerheiligen",
+      "lat": 51.142436,
+      "lon": 6.756699,
+      "ansage": {
+        "text": "Nächste Haltestelle: Neuss Allerheiligen."
+      }
+    },
+    {
+      "name": "Neuss-Norf",
+      "lat": 51.160907,
+      "lon": 6.731631,
+      "ansage": {
+        "text": "Nächste Haltestelle: Neuss-Norf."
+      }
+    },
+    {
+      "name": "Neuss Süd",
+      "lat": 51.185546,
+      "lon": 6.694296,
+      "ansage": {
+        "text": "Nächste Haltestelle: Neuss Süd."
+      }
+    },
+    {
+      "name": "Neuss Hbf",
+      "lat": 51.203962,
+      "lon": 6.685509,
+      "sprich": "Neuss Hauptbahnhof",
+      "ansage": {
+        "text": "Nächste Haltestelle: Neuss Hauptbahnhof. Diese Linie endet hier. Wir bitten alle Fahrgäste auszusteigen. Milo Reisen wünscht Ihnen einen schönen Tag. Bis bald!"
+      }
+    }
+  ]
+}

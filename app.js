@@ -222,12 +222,14 @@
         '<span class="karte-text"><span class="karte-ziel"></span><span class="karte-weg"></span><span class="karte-info"></span></span>';
       b.querySelector('.karte-linie').textContent = s.linie || '';
       b.querySelector('.karte-ziel').textContent = 'nach ' + (s.ziel || h[m].name);
-      b.querySelector('.karte-weg').textContent = 'ab ' + h[0].name + (ueber.length ? ' · über ' + ueber.join(', ') : '');
+      const ueberKurz = ueber.length > 4 ? ueber.slice(0, 3).join(', ') + ' …' : ueber.join(', ');
+      b.querySelector('.karte-weg').textContent = 'ab ' + h[0].name + (ueber.length ? ' · über ' + ueberKurz : '');
       const info = b.querySelector('.karte-info');
       const marke = (t, k) => { const x = document.createElement('span'); x.className = 'marke ' + (k || ''); x.textContent = t; info.appendChild(x); };
       if (d != null) d < 600 ? marke('Startpunkt hier', 'marke-hier') : marke(km(d) + ' bis zum Start');
       marke(h.length + ' Haltestellen');
       if (aufnahmen < h.length) marke(aufnahmen ? 'teils Computerstimme' : 'Computerstimme', 'marke-tts');
+      if (s.hinweis) marke(s.hinweis, 'marke-hinweis');
       b.addEventListener('click', () => starteFahrt(s.id, testModus));
       box.appendChild(b);
     }

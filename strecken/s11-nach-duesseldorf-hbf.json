@@ -1,0 +1,133 @@
+{
+  "linie": "S11",
+  "kopf": "Ersatzverkehr S11",
+  "farbe": "#9C1963",
+  "symbol": "bilder/sev.png",
+  "ziel": "Düsseldorf Hbf",
+  "hinweis": "nur sonntags: Fahrt 00:43 ab Köln-Worringen",
+  "ansageVorHalt": 400,
+  "begruessung": {
+    "text": "Sehr geehrte Fahrgäste, wir begrüßen Sie im Schienenersatzverkehr der Linie S11. Dieser Bus fährt über Dormagen, Neuss Hauptbahnhof und Düsseldorf-Bilk nach Düsseldorf Hauptbahnhof. Milo Reisen wünscht Ihnen einen schönen Tag. Bis bald. Nächste Haltestelle: Dormagen Chempark."
+  },
+  "halte": [
+    {
+      "name": "Köln-Worringen",
+      "lat": 51.052369,
+      "lon": 6.852289
+    },
+    {
+      "name": "Dormagen Chempark",
+      "lat": 51.076956,
+      "lon": 6.838029,
+      "ansage": {
+        "text": "Nächste Haltestelle: Dormagen Chempark."
+      }
+    },
+    {
+      "name": "Dormagen",
+      "lat": 51.099282,
+      "lon": 6.816974,
+      "ansage": {
+        "text": "Nächste Haltestelle: Dormagen."
+      }
+    },
+    {
+      "name": "Nievenheim",
+      "lat": 51.123696,
+      "lon": 6.783607,
+      "ansage": {
+        "text": "Nächste Haltestelle: Nievenheim."
+      }
+    },
+    {
+      "name": "Neuss Allerheiligen",
+      "lat": 51.142436,
+      "lon": 6.756699,
+      "ansage": {
+        "text": "Nächste Haltestelle: Neuss Allerheiligen."
+      }
+    },
+    {
+      "name": "Neuss-Norf",
+      "lat": 51.160907,
+      "lon": 6.731631,
+      "ansage": {
+        "text": "Nächste Haltestelle: Neuss-Norf."
+      }
+    },
+    {
+      "name": "Neuss Süd",
+      "lat": 51.185546,
+      "lon": 6.694296,
+      "ansage": {
+        "text": "Nächste Haltestelle: Neuss Süd."
+      }
+    },
+    {
+      "name": "Neuss Hbf",
+      "lat": 51.203962,
+      "lon": 6.685509,
+      "sprich": "Neuss Hauptbahnhof",
+      "ansage": {
+        "text": "Nächste Haltestelle: Neuss Hauptbahnhof."
+      }
+    },
+    {
+      "name": "Neuss Am Kaiser",
+      "lat": 51.220242,
+      "lon": 6.698451,
+      "ansage": {
+        "text": "Nächste Haltestelle: Neuss Am Kaiser."
+      }
+    },
+    {
+      "name": "Neuss Rheinparkcenter",
+      "lat": 51.206002,
+      "lon": 6.715937,
+      "ansage": {
+        "text": "Nächste Haltestelle: Neuss Rheinparkcenter."
+      }
+    },
+    {
+      "name": "Düsseldorf-Hamm",
+      "lat": 51.211104,
+      "lon": 6.73927,
+      "ansage": {
+        "text": "Nächste Haltestelle: Düsseldorf-Hamm."
+      }
+    },
+    {
+      "name": "Düsseldorf Völklinger Straße",
+      "lat": 51.209817,
+      "lon": 6.762184,
+      "ansage": {
+        "text": "Nächste Haltestelle: Düsseldorf Völklinger Straße."
+      }
+    },
+    {
+      "name": "Düsseldorf-Bilk",
+      "lat": 51.210842,
+      "lon": 6.77715,
+      "ansage": {
+        "text": "Nächste Haltestelle: Düsseldorf-Bilk."
+      }
+    },
+    {
+      "name": "Düsseldorf-Friedrichstadt",
+      "lat": 51.211208,
+      "lon": 6.788638,
+      "ansage": {
+        "text": "Nächste Haltestelle: Düsseldorf-Friedrichstadt."
+      }
+    },
+    {
+      "name": "Düsseldorf Hbf",
+      "lat": 51.2232,
+      "lon": 6.794,
+      "sprich": "Düsseldorf Hauptbahnhof",
+      "ansage": {
+        "text": "Nächste Haltestelle: Düsseldorf Hauptbahnhof. Diese Linie endet hier. Wir bitten alle Fahrgäste auszusteigen. Milo Reisen wünscht Ihnen einen schönen Tag. Bis bald!"
+      }
+    }
+  ]
+}

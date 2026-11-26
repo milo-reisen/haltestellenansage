@@ -47,6 +47,7 @@ button { font: inherit; cursor: pointer; }
 .marke { font-size: 14px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--blau-hell); color: var(--blau); }
 .marke-hier { background: #e3f6e8; color: #17672e; }
 .marke-tts { background: #f1eef5; color: #5b3d7a; }
+.marke-hinweis { background: #fff4d6; color: #6b4a00; }
 .test .karte { outline: 3px dashed #d79b00; outline-offset: -3px; }
 
 .aw-fuss { display: flex; align-items: center; gap: 12px; padding: 12px 26px 16px; }

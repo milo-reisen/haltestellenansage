@@ -99,6 +99,7 @@ Das Büro gibt die Haltestellen mit dem Fahrplan vor. Jede Fahrtrichtung ist ein
   „Diese Linie endet hier …“).
 - Optional pro Halt: `"sprich": "…"`, wenn die Computerstimme den Namen anders aussprechen soll.
 - `rueckfahrt`: Dateiname (ohne `.json`) der Gegenrichtung.
+- `hinweis` (optional): kurzer Hinweis für den Fahrer auf der Karte, z. B. „nur sonntags: Fahrt 00:43 ab Köln-Worringen“.
 - Koordinaten: in Google Maps auf die Haltestelle tippen → die Zahlen oben sind `lat, lon`. Genauer geht es im Bus mit
   „Position speichern“.
 
