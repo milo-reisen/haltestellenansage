@@ -210,7 +210,9 @@
     if (breit > platz && platz > 0) el.style.transform = 'scale(' + (platz / breit) + ')';
   }
 
-  const MAX_PUNKTE = 7;   // so viele Halte passen auf die Linie; dazwischen „weitere“
+  const MAX_PUNKTE = 6;      // so viele Punkte passen auf die Linie (inkl. Endhalt); dazwischen „weitere“
+  const ABSTAND = 0.135;     // fester Abstand zwischen zwei Halten (Anteil der Bandbreite) – je weniger Halte, desto kürzer die Linie
+  const SCHRIFT_VH = 3.6;    // gleiche Schriftgröße für alle Zwischenhalte
   function zeichneAnzeige() {
     if (!fahrt) return;
     $('#az-name').textContent = fahrt.naechster.name;
@@ -222,32 +224,57 @@
     }
     if (punkte.length === 1) punkte[0].art = 'ziel';
     const band = $('#az-band');
-    band.parentNode.classList.toggle('allein', punkte.length === 1);
+    const breite = band.clientWidth;
+    const start = window.innerHeight * 0.018;     // 1,8vh: Mitte des ersten Punkts
+    const schritt = breite * ABSTAND;
     band.innerHTML = '';
+    const schiene = $('.band .schiene');
+    schiene.style.width = ((punkte.length - 1) * schritt) + 'px';
+    schiene.hidden = punkte.length < 2;
     punkte.forEach((p, i) => {
       const li = document.createElement('li');
       li.className = p.art;
-      // Endhalt ganz rechts, die übrigen Halte auf den ersten drei Vierteln der Linie
-      const n = punkte.length, spanne = Math.min(0.74, (n - 2) / (n - 1));
-      const f = i === n - 1 ? 1 : (n <= 2 ? 0 : spanne * i / (n - 2));
-      li.style.left = 'calc(1.8vh + (100% - 4.2vh) * ' + f + ')';
+      li.style.left = (start + i * schritt) + 'px';
       li.innerHTML = p.art === 'ziel' ? '<img src="bilder/haltestelle.png" alt=""><span></span>' : '<i></i><span></span>';
       li.querySelector('span').textContent = p.name;
       band.appendChild(li);
     });
     zeichneKnopf();
     requestAnimationFrame(() => {
-      // Schräge Namen auf der Linie nicht zu lang werden lassen (sonst laufen sie in den großen Namen)
-      const max = window.innerHeight * 0.30;
-      band.querySelectorAll('li:not(.ziel) span').forEach(s => {
-        const b = s.offsetWidth;
-        if (b > max) s.style.fontSize = Math.max(2.6, 3.9 * max / b) + 'vh';
-      });
+      // Alle Zwischenhalte in derselben Größe – für die ganze Fahrt gleich. Nur wenn der längste Name der Strecke
+      // sonst in den großen Namen liefe, werden alle gemeinsam etwas kleiner.
       passe($('#az-name'), $('#az-name').parentNode);
+      const vh = schriftFuerFahrt(schiene);
+      band.querySelectorAll('li:not(.ziel) span').forEach(s => { s.style.fontSize = vh + 'vh'; });
+      // Endhalt rechts neben dem H-Schild; falls zu wenig Platz, etwas kleiner
+      const ziel = band.querySelector('li.ziel span');
+      if (ziel) {
+        ziel.style.transform = 'translateY(50%)';
+        const platz = breite - (ziel.getBoundingClientRect().left - band.getBoundingClientRect().left);
+        if (ziel.offsetWidth > platz) ziel.style.transform = 'translateY(50%) scale(' + (platz / ziel.offsetWidth) + ')';
+      }
       passe($('.kopf-ziel > span'), $('.kopf-ziel'));
     });
   }
+  let schriftCache = null;   // { fahrt, breite, hoehe, vh }
+  function schriftFuerFahrt(schiene) {
+    const w = window.innerWidth, h = window.innerHeight;
+    if (schriftCache && schriftCache.fahrt === fahrt && schriftCache.breite === w && schriftCache.hoehe === h) return schriftCache.vh;
+    const px = h * SCHRIFT_VH / 100;
+    const ctx = (schriftFuerFahrt.c = schriftFuerFahrt.c || document.createElement('canvas')).getContext('2d');
+    ctx.font = '600 ' + px + 'px "Barlow SC"';
+    const namen = fahrt.halte.slice(1, -1).map(x => x.name).concat(['99 weitere']);
+    const breitester = Math.max(0, ...namen.map(n => ctx.measureText(n).width));
+    // Platz nach oben: von der Linie bis knapp unter den großen Namen (Höhe des großen Namens fest, damit es für alle Halte gleich bleibt)
+    const linieY = schiene.getBoundingClientRect().top;
+    const nameUnten = $('.naechster').getBoundingClientRect().bottom;
+    const maxBreite = Math.max(50, (linieY - nameUnten + h * 0.02) / Math.sin(32 * Math.PI / 180));
+    const vh = breitester > maxBreite ? SCHRIFT_VH * maxBreite / breitester : SCHRIFT_VH;
+    schriftCache = { fahrt, breite: w, hoehe: h, vh };
+    return vh;
+  }
   window.addEventListener('resize', () => zeichneAnzeige());
+  if (document.fonts) document.fonts.ready.then(() => { schriftCache = null; zeichneAnzeige(); });
 
   function zeichneKnopf() {
     if (!fahrt) return;

@@ -19,6 +19,8 @@ Nutzer und Texte sind deutsch; Code-Bezeichner ebenfalls deutsch halten.
   Gleiche Texte nur einmal aufnehmen und in mehreren Fahrplänen verwenden.
 - Fahrgastanzeige Design „Tag“ (vom Nutzer gewählt; das PowerPoint-Design und eine gelbe Schaltfläche hat er abgelehnt):
   weiß, Kopfband in Linienfarbe (#9C1963) mit SEV-Piktogramm, Linien-Plakette, „Ersatzverkehr nach Ziel“, Uhr;
-  nächste Haltestelle groß (Barlow Semi Condensed 700); unten Streckenverlauf als Linie, Namen schräg, Endhalt mit H-Schild.
+  nächste Haltestelle groß (Barlow Semi Condensed 700); unten Streckenverlauf als Linie mit festem Abstand zwischen den
+  Halten (Linie wird zum Ende hin kürzer), alle Zwischenhalte schräg in gleicher Schrift und Größe (für die ganze Fahrt),
+  Endhalt deutlich: großes H-Schild, Name groß rechts daneben.
   Maße in vh/vw. Änderungen am Aussehen mit einem Bildschirmfoto bei 1600×900 und 1280×800 prüfen.
 - Ablauf-Logik nur in `fahrt.js` (rein rechnend, Zeit von außen, in Node testbar); `app.js` macht Bildschirm, Ton, Bedienung.
