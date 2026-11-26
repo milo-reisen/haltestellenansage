@@ -26,15 +26,9 @@ button { font: inherit; cursor: pointer; }
 .aw-band { display: flex; align-items: center; gap: 22px; padding: 14px 26px; background: var(--blau); color: #fff; }
 .aw-logo { height: 30px; width: auto; }
 .aw-titel { font-size: 28px; font-weight: 700; flex: 1; letter-spacing: .2px; }
-.chip { font-size: 17px; font-weight: 700; padding: 7px 14px; border-radius: 999px; white-space: nowrap; }
-.chip-aus { background: rgba(255,255,255,.18); color: #fff; }
-.chip-gut { background: #e3f6e8; color: #17672e; }
-.chip-mittel { background: #fff4d6; color: #7a5400; }
-.chip-schlecht { background: #fde4e4; color: #9b1c1c; }
 .aw-inhalt { flex: 1; overflow-y: auto; padding: 18px 26px 10px; }
 .aw-h { font-size: 24px; margin: 6px 0 14px; color: var(--grau); font-weight: 700; }
 .aw-liste { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 16px; }
-.aw-testband { background: #fff4d6; color: #5c4000; border-radius: 12px; padding: 12px 16px; font-size: 19px; font-weight: 700; margin-bottom: 8px; }
 .leer { font-size: 20px; color: var(--grau); }
 
 .karte { display: flex; align-items: stretch; gap: 0; min-height: 118px; text-align: left; border: 0; padding: 0; border-radius: 16px; background: #fff; box-shadow: 0 1px 2px rgba(16,32,48,.08), 0 4px 14px rgba(16,32,48,.08); overflow: hidden; color: var(--tinte); transition: transform .12s; }
@@ -48,7 +42,6 @@ button { font: inherit; cursor: pointer; }
 .marke-hier { background: #e3f6e8; color: #17672e; }
 .marke-tts { background: #f1eef5; color: #5b3d7a; }
 .marke-hinweis { background: #fff4d6; color: #6b4a00; }
-.test .karte { outline: 3px dashed #d79b00; outline-offset: -3px; }
 
 .aw-fuss { display: flex; align-items: center; gap: 12px; padding: 12px 26px 16px; }
 .aw-version { margin-left: auto; color: var(--grau); font-size: 15px; }
@@ -67,24 +60,37 @@ button { font: inherit; cursor: pointer; }
 .fuss-t { padding: 0 3vw; font-size: 17.8vh; }
 .kopf-t span, .fuss-t span { display: inline-block; flex: none; transform-origin: center; }
 .mitte { position: absolute; left: 0; right: 0; top: 20.58vh; bottom: 20.8vh; }
-.leiter { position: absolute; inset: 0; }
+.leiter { position: absolute; inset: 0; --x: 20vw; }
 .verbinder { position: absolute; width: 4.2vh; background: var(--linie); }
 .mehr { position: absolute; width: 4.2vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .9vh; }
 .mehr i { display: block; width: 1.5vh; height: 1.5vh; border-radius: 50%; background: #fff; }
-.halt { position: absolute; left: 13.7vw; right: 17.9vw; height: var(--r); }
+.halt { position: absolute; left: var(--x); right: 11.5vw; height: var(--r); }
 .halt-h { position: absolute; left: 0; top: 0; width: var(--r); height: var(--r); border-radius: 50%; z-index: 2; }
 .halt-balken { position: absolute; left: calc(var(--r) * .3); right: 0; top: 0; bottom: 0; background: var(--linie); }
 .halt-t { position: absolute; left: calc(var(--r) + 1vw); right: 1.2vw; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: var(--f); white-space: nowrap; overflow: visible; }
 .halt-t span { display: inline-block; flex: none; transform-origin: center; }
-.gps-punkt { position: absolute; right: 1.2vh; top: 1.2vh; width: 1.6vh; height: 1.6vh; border-radius: 50%; background: rgba(255,255,255,.55); }
-.test-marke { position: absolute; left: 1vh; bottom: 1vh; font-size: 2.4vh; font-weight: 700; color: #fff; background: rgba(0,0,0,.35); padding: .3vh 1vh; border-radius: .6vh; letter-spacing: .1em; text-transform: uppercase; }
 
-/* ---------- Bedienung während der Fahrt ---------- */
+/* Schaltfläche „Nächste Haltestelle“: für den Fahrer zum Antippen, für die Fahrgäste die Beschriftung des nächsten Halts */
+.knopf { position: absolute; left: 1.8vw; width: 16.8vw; z-index: 3; border: 0; padding: 0 1.2vw 0 1vw; border-radius: 1.8vh;
+  background: #FFE600; color: #0d5c2e; display: flex; align-items: center; gap: .9vw; cursor: pointer; overflow: hidden;
+  box-shadow: 0 .5vh 1.4vh rgba(0,0,0,.22), inset 0 -.5vh 0 rgba(0,0,0,.08); font-family: var(--schrift); text-align: left; }
+.knopf:active { transform: translateY(.3vh); box-shadow: 0 .2vh .6vh rgba(0,0,0,.25); }
+.knopf-ico { flex: none; width: min(4.4vh, 2.6vw); height: min(4.4vh, 2.6vw); }
+.knopf-t { font-weight: 700; font-size: min(4vh, 2.2vw); line-height: 1.05; }
+.knopf-zeit { position: absolute; left: 0; right: 0; bottom: 0; height: .9vh; background: #0d5c2e; transform-origin: left center; transition: transform 1s linear; }
+.knopf.spricht { animation: spricht 1.1s ease-in-out infinite; }
+.knopf.spricht .knopf-ico { animation: ico 0.55s ease-in-out infinite alternate; }
+@keyframes spricht { 0%, 100% { box-shadow: 0 .5vh 1.4vh rgba(0,0,0,.22), 0 0 0 0 rgba(255,230,0,.65); } 50% { box-shadow: 0 .5vh 1.4vh rgba(0,0,0,.22), 0 0 0 1.4vh rgba(255,230,0,0); } }
+@keyframes ico { from { transform: scale(1); } to { transform: scale(1.15); } }
+.knopf.ende { background: #fff; color: var(--linie); box-shadow: inset 0 0 0 .5vh var(--linie); }
+.knopf.ende .knopf-ico { display: none; }
+
+/* ---------- Fahrermenü ---------- */
 .steuer { position: fixed; left: 2vw; right: 2vw; bottom: 2vh; z-index: 10; background: rgba(18,26,34,.92); color: #fff; border-radius: 18px; padding: 14px 16px 16px; box-shadow: 0 10px 30px rgba(0,0,0,.35); font-family: var(--schrift); }
-.st-zeile { display: flex; gap: 16px; align-items: baseline; margin: 0 4px 12px; font-size: 19px; }
+.st-zeile { display: flex; gap: 16px; align-items: baseline; margin: 0 4px 12px; font-size: 20px; }
 .st-status { flex: 1; font-weight: 700; }
-.st-gps { color: #c9d4de; white-space: nowrap; }
 .st-knoepfe { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+.st-knoepfe button small { display: block; font-size: 14px; font-weight: 400; opacity: .8; }
 .st-knoepfe button { min-height: 64px; border-radius: 12px; border: 0; background: #2d3b48; color: #fff; font-weight: 700; font-size: 19px; padding: 6px 10px; line-height: 1.15; }
 .st-knoepfe button.haupt { background: var(--blau); }
 .st-knoepfe button.warn { background: #b3261e; }
@@ -103,10 +109,7 @@ button { font: inherit; cursor: pointer; }
 .ei-zeile { display: flex !important; align-items: center; justify-content: space-between; gap: 14px; }
 .ei-zeile select { font: inherit; font-size: 18px; padding: 8px 10px; border-radius: 10px; border: 1px solid #b9c5cf; background: #fff; max-width: 60%; }
 .ei-hinweis { margin: 0; color: var(--grau); font-size: 16px; }
-.ei-zeile input[type=url], .ei-zeile input[type=text] { font: inherit; font-size: 16px; padding: 8px 10px; border-radius: 10px; border: 1px solid #b9c5cf; width: 60%; }
 .ei-form input[type=checkbox] { width: 22px; height: 22px; flex: none; }
-.ei-details summary { cursor: pointer; color: var(--blau); font-weight: 700; margin: 4px 0; }
-.ei-details { display: flex; flex-direction: column; gap: 8px; }
 .ei-ende { display: flex; justify-content: flex-end; }
 
 @media (max-width: 700px) {

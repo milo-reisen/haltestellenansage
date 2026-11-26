@@ -10,25 +10,22 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="app.css?v=ca2106309f">
-<script>window.HSA = {"version": "1.2.0", "stand": "7326e8ca57"};</script>
+<link rel="stylesheet" href="app.css?v=7b71def5dc">
+<script>window.HSA = {"version": "2.0.0", "stand": "dd03ac529a"};</script>
 </head>
 <body>
 
-<!-- Streckenauswahl (für den Fahrer) -->
+<!-- Fahrplanauswahl (für den Fahrer) -->
 <main id="auswahl" class="auswahl">
   <header class="aw-band">
     <img class="aw-logo" src="logo/schriftzug-hell.png" alt="Milo Reisen">
     <div class="aw-titel">Haltestellenansage</div>
-    <div id="aw-gps" class="chip chip-aus" role="status">GPS …</div>
   </header>
   <div class="aw-inhalt">
-    <div id="aw-test" class="aw-testband" hidden>Testfahrt: Die Fahrt wird im Zeitraffer simuliert, das GPS wird nicht benutzt. Fahrplan antippen.</div>
-    <h1 class="aw-h">Fahrplan antippen – den Rest macht die App</h1>
+    <h1 class="aw-h">Fahrplan antippen</h1>
     <div id="aw-liste" class="aw-liste"><p class="leer">Fahrpläne werden geladen …</p></div>
   </div>
   <footer class="aw-fuss">
-    <button id="bt-test" class="zweit" type="button" aria-pressed="false">Testfahrt</button>
     <button id="bt-einst" class="zweit" type="button">Einstellungen</button>
     <span id="aw-version" class="aw-version"></span>
   </footer>
@@ -39,24 +36,26 @@
   <header class="kopf">
     <img id="az-symbol" class="kopf-sym" src="bilder/sev.png" alt="">
     <div class="kopf-t"><span id="az-kopf">Ersatzverkehr</span></div>
-    <span id="az-gps" class="gps-punkt" hidden></span>
   </header>
-  <div class="mitte"><div id="az-leiter" class="leiter"></div></div>
+  <div class="mitte">
+    <div id="az-leiter" class="leiter"></div>
+    <button id="az-knopf" class="knopf" type="button" aria-label="Nächste Haltestelle ansagen">
+      <svg class="knopf-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a4.5 4.5 0 0 1 0 7M18.5 6a8 8 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <span id="az-knopf-t" class="knopf-t">Nächste<br>Haltestelle</span>
+      <i id="az-knopf-zeit" class="knopf-zeit" hidden></i>
+    </button>
+  </div>
   <footer class="fuss"><div class="fuss-t"><span id="az-ziel"></span></div></footer>
-  <div id="az-test" class="test-marke" hidden>Testfahrt</div>
 </section>
 
-<!-- Bedienung während der Fahrt: erscheint nach Antippen, verschwindet von selbst -->
+<!-- Fahrermenü: erscheint nach Antippen der Anzeige, verschwindet von selbst -->
 <div id="steuer" class="steuer" hidden>
-  <div class="st-zeile">
-    <span id="st-status" class="st-status"></span>
-    <span id="st-gps" class="st-gps"></span>
-  </div>
+  <div class="st-zeile"><span id="st-status" class="st-status"></span></div>
   <div class="st-knoepfe">
-    <button type="button" data-a="zurueck">◀&#xFE0E; Zurück</button>
+    <button type="button" data-a="zurueck">◀&#xFE0E; Halt zurück</button>
+    <button type="button" data-a="weiter">Halt weiter ▶&#xFE0E;<small>ohne Ansage</small></button>
     <button type="button" data-a="wiederholen">Ansage wiederholen</button>
-    <button type="button" data-a="weiter" class="haupt">Weiter ▶&#xFE0E;</button>
-    <button type="button" data-a="position" id="st-pos">Position speichern</button>
+    <button type="button" data-a="begruessung">Begrüßung abspielen</button>
     <button type="button" data-a="rueck" id="st-rueck" class="haupt" hidden>Rückfahrt</button>
     <button type="button" data-a="beenden" id="st-ende">Fahrt beenden</button>
   </div>
@@ -67,50 +66,21 @@
 <dialog id="einst" class="einst">
   <form method="dialog" class="ei-form">
     <h2>Einstellungen</h2>
-    <fieldset>
-      <legend>GPS vom Bus (Samsara)</legend>
-      <p id="ei-bus-status" class="ei-hinweis"></p>
-      <label class="ei-zeile">In welchem Bus hängt dieses Tablet?
-        <select id="ei-fahrzeug"><option value="">– erst „Fahrzeuge laden“ –</option></select>
-      </label>
-      <div class="ei-zeile"><span></span><button type="button" id="ei-fz-laden" class="zweit">Fahrzeuge laden</button></div>
-      <label><input type="checkbox" id="ei-ersatz" checked> GPS vom Tablet benutzen, wenn der Bus gerade keine Daten liefert</label>
-      <details class="ei-details">
-        <summary>Verbindung von Hand eintragen</summary>
-        <label class="ei-zeile">WordPress-Adresse <input id="ei-server" type="url" inputmode="url" placeholder="https://milo-reisen.de/wp-admin/admin-ajax.php"></label>
-        <label class="ei-zeile">App-Schlüssel <input id="ei-schluessel" type="text" autocomplete="off" spellcheck="false"></label>
-      </details>
-    </fieldset>
-    <label><input type="checkbox" id="ei-autorueck" checked> Am Endhalt nach 30 Sekunden von selbst die Rückfahrt starten</label>
-    <fieldset>
-      <legend>Begrüßung abspielen</legend>
-      <label><input type="radio" name="begr" value="abfahrt" checked> bei Abfahrt vom ersten Halt</label>
-      <label><input type="radio" name="begr" value="sofort"> sofort, wenn der Fahrplan angetippt wird</label>
-    </fieldset>
-    <label class="ei-zeile">„Nächste Haltestelle“ ansagen
-      <select id="ei-abstand">
-        <option value="">wie im Fahrplan festgelegt</option>
-        <option value="200">200 m vor dem Halt</option>
-        <option value="300">300 m vor dem Halt</option>
-        <option value="400">400 m vor dem Halt</option>
-        <option value="600">600 m vor dem Halt</option>
-        <option value="800">800 m vor dem Halt</option>
+    <label class="ei-zeile">Nach der Ansage wechselt die Anzeige zum nächsten Halt nach
+      <select id="ei-wechsel">
+        <option value="60">1 Minute</option>
+        <option value="90">1½ Minuten</option>
+        <option value="120" selected>2 Minuten</option>
+        <option value="180">3 Minuten</option>
+        <option value="300">5 Minuten</option>
+        <option value="10">10 Sekunden (zum Ausprobieren)</option>
       </select>
     </label>
-    <label class="ei-zeile">Tempo der Testfahrt
-      <select id="ei-tempo">
-        <option value="5">5-fach</option>
-        <option value="10" selected>10-fach</option>
-        <option value="20">20-fach</option>
-      </select>
-    </label>
+    <label><input type="checkbox" id="ei-begr" checked> Begrüßung abspielen, wenn der Fahrplan angetippt wird</label>
+    <label><input type="checkbox" id="ei-autorueck" checked> Nach dem Endhalt von selbst die Rückfahrt anzeigen</label>
     <div class="ei-zeile">
       <span>Lautsprecher prüfen</span>
       <button type="button" id="ei-tontest" class="zweit">Testansage</button>
-    </div>
-    <div class="ei-zeile">
-      <span id="ei-pos-text">Gespeicherte Haltestellen-Positionen: 0</span>
-      <button type="button" id="ei-pos-loeschen" class="zweit">Alle löschen</button>
     </div>
     <div class="ei-zeile">
       <span id="ei-version"></span>
@@ -121,7 +91,7 @@
   </form>
 </dialog>
 
-<script src="fahrt.js?v=a978736dcf"></script>
-<script src="app.js?v=8f741ca65d"></script>
+<script src="fahrt.js?v=9535e2f8e5"></script>
+<script src="app.js?v=0c1596f361"></script>
 </body>
 </html>
