@@ -9,10 +9,10 @@ Adresse der App: **https://milo-reisen.github.io/haltestellenansage/**
 
 1. Der Fahrer tippt den **Fahrplan** an. Die Monitore zeigen oben Linie, Ziel und Uhrzeit, in der Mitte groß
    die nächste Haltestelle und unten den weiteren Streckenverlauf als Linie. Paula begrüßt die Fahrgäste.
-2. Über dem großen Haltestellennamen steht dezent **„Nächste Haltestelle“** – das ist für den Fahrer die
-   Schaltfläche. Tippt er darauf, sagt Paula „Nächste Haltestelle: …“.
-3. **2 Minuten nach dieser Ansage** rückt die Anzeige von selbst weiter zum folgenden Halt. Der feine Strich unter
-   „Nächste Haltestelle“ zeigt die verbleibende Zeit.
+2. Über dem großen Haltestellennamen steht **„Nächste Haltestelle“** in einer zart getönten Fläche – für die
+   Fahrgäste eine Überschrift, für den Fahrer die Schaltfläche. Tippt er darauf, sagt Paula „Nächste Haltestelle: …“.
+3. **2 Minuten nach dieser Ansage** rückt die Anzeige von selbst weiter zum folgenden Halt. Der feine Strich in der
+   Fläche „Nächste Haltestelle“ zeigt die verbleibende Zeit.
 4. Nach dem Endhalt zeigt die App von selbst die **Rückfahrt** an und begrüßt die neuen Fahrgäste.
 
 Kein GPS nötig. Nochmal Tippen während der Wartezeit wiederholt die Ansage, die 2 Minuten beginnen dann neu.

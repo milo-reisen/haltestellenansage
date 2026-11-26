@@ -4,8 +4,9 @@ Statische Web-App (PWA) auf GitHub Pages: https://milo-reisen.github.io/halteste
 keine Abhängigkeiten. Läuft auf Android-Tablets in Chrome, die 1:1 auf die Monitore im Bus gespiegelt werden.
 Nutzer und Texte sind deutsch; Code-Bezeichner ebenfalls deutsch halten.
 
-- Bedienung ohne GPS (Nutzer hat GPS/Samsara verworfen): Fahrer tippt Fahrplan → Begrüßung; dezente Beschriftung
-  „Nächste Haltestelle“ (= Schaltfläche, soll NICHT auffällig sein) → Ansage; 2 Minuten nach Ende der Ansage rückt die
+- Bedienung ohne GPS (Nutzer hat GPS/Samsara verworfen): Fahrer tippt Fahrplan → Begrüßung; „Nächste Haltestelle“
+  groß in zart getönter Fläche mit feinem Rand, ohne Symbol (Fahrer soll sie als Schaltfläche erkennen, Fahrgästen soll sie
+  kaum auffallen) → Ansage; 2 Minuten nach Ende der Ansage rückt die
   Anzeige weiter; nach Endhalt Rückfahrt.
 - Nach jeder Änderung `python3 werkzeug/fertig.py` ausführen (prüft Fahrpläne, setzt Kennungen, `sw.js`, `version.json`),
   dann `node werkzeug/test-fahrt.js`. Erst danach committen.

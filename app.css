@@ -63,18 +63,18 @@ button { font: inherit; cursor: pointer; }
 .kopf-uhr { flex: none; font-family: var(--schmal); font-weight: 600; font-size: 5.6vh; font-variant-numeric: tabular-nums; }
 
 .naechster { padding: 3.5vh 4vw 0; display: flex; flex-direction: column; justify-content: center; gap: .6vh; min-width: 0; }
-/* „Nächste Haltestelle“: für Fahrgäste eine leise Beschriftung, für den Fahrer die Schaltfläche */
-.ansagen { align-self: flex-start; position: relative; display: inline-flex; align-items: center; gap: 1.1vh; min-height: 7vh;
-  margin-left: -1.4vh; padding: 1vh 1.4vh; border: 0; border-radius: 1vh; background: none;
-  font-family: var(--schrift); font-size: 3.6vh; font-weight: 500; color: var(--matt); }
-.ansagen:active { background: rgba(0,0,0,.05); }
-.ansagen svg { width: 3.2vh; height: 3.2vh; opacity: .7; }
-.ansagen::after { content: ""; position: absolute; left: 1.4vh; right: 1.4vh; bottom: .9vh; height: .3vh; background: var(--matt); opacity: .25; }
-.ansagen .zeit { position: absolute; left: 1.4vh; right: 1.4vh; bottom: .9vh; height: .3vh; background: var(--linie); opacity: .7; transform-origin: left center; transition: transform 1s linear; z-index: 1; }
-.ansagen.spricht { color: var(--tinte); }
-.ansagen.spricht svg { opacity: 1; animation: welle 1s ease-in-out infinite; }
-@keyframes welle { 50% { opacity: .35; } }
-.ansagen.ende::after, .ansagen.ende svg { display: none; }
+/* „Nächste Haltestelle“: für Fahrgäste eine Überschrift, für den Fahrer erkennbar zum Antippen –
+   zart getönte Fläche mit feinem Rand, kein Symbol, keine kräftige Farbe */
+.ansagen { align-self: flex-start; position: relative; display: inline-flex; align-items: center; min-height: 8.4vh;
+  margin: 0 0 1.4vh -.2vh; padding: 1.3vh 2.6vh 1.5vh; border: .25vh solid #ecd0df; border-radius: 1.6vh;
+  background: #faf1f6; overflow: hidden;
+  font-family: var(--schrift); font-size: 4.6vh; font-weight: 600; line-height: 1; color: #6e2450;
+  border-color: color-mix(in srgb, var(--linie) 22%, #fff); background: color-mix(in srgb, var(--linie) 6%, #fff); color: color-mix(in srgb, var(--linie) 55%, #3a2a35); }
+.ansagen:active { background: color-mix(in srgb, var(--linie) 14%, #fff); transform: translateY(.2vh); }
+.ansagen .zeit { position: absolute; left: 0; right: 0; bottom: 0; height: .55vh; background: var(--linie); opacity: .55; transform-origin: left center; transition: transform 1s linear; }
+.ansagen.spricht { animation: spricht 1.6s ease-in-out infinite; }
+@keyframes spricht { 50% { background: color-mix(in srgb, var(--linie) 13%, #fff); } }
+.ansagen.ende { background: none; border-color: transparent; padding-left: 0; }
 .name { font-family: var(--schmal); font-weight: 700; font-size: 16vh; line-height: .98; letter-spacing: -.01em; color: var(--tinte); white-space: nowrap; }
 .name span { display: inline-block; transform-origin: left center; }
 
@@ -123,6 +123,6 @@ button { font: inherit; cursor: pointer; }
   .st-knoepfe { grid-template-columns: repeat(3, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ansagen.spricht svg { animation: none; }
+  .ansagen.spricht { animation: none; }
   .ansagen .zeit { transition: none; }
 }
