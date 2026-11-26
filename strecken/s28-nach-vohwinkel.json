@@ -1,0 +1,38 @@
+{
+  "linie": "S28",
+  "kopf": "Ersatzverkehr S28",
+  "farbe": "#9C1963",
+  "symbol": "bilder/sev.png",
+  "ziel": "Wuppertal-Vohwinkel",
+  "rueckfahrt": "s28-nach-mettmann",
+  "ansageVorHalt": 400,
+  "begruessung": {
+    "ton": "ton/s28-begruessung-nach-vohwinkel.mp3",
+    "text": "Sehr geehrte Fahrgäste, wir begrüßen Sie im Schienenersatzverkehr der Linie S28. Dieser Bus fährt über Wuppertal-Hahnenfurth nach Wuppertal-Vohwinkel. Milo Reisen wünscht Ihnen einen schönen Tag. Bis bald. Nächste Haltestelle: Wuppertal-Hahnenfurth."
+  },
+  "halte": [
+    {
+      "name": "Mettmann Stadtwald",
+      "lat": 51.250901,
+      "lon": 6.987358
+    },
+    {
+      "name": "Wuppertal - Hahnenfurth/Düssel",
+      "lat": 51.254262,
+      "lon": 7.056441,
+      "ansage": {
+        "ton": "ton/s28-naechster-halt-hahnenfurth.mp3",
+        "text": "Nächste Haltestelle: Wuppertal-Hahnenfurth. Regiobahn Fahrbetriebsgesellschaft und Milo Reisen wünschen Ihnen einen schönen Tag. Bis bald!"
+      }
+    },
+    {
+      "name": "Wuppertal-Vohwinkel",
+      "lat": 51.233851,
+      "lon": 7.070875,
+      "ansage": {
+        "ton": "ton/s28-naechster-halt-vohwinkel-endhalt.mp3",
+        "text": "Nächste Haltestelle: Wuppertal-Vohwinkel. Diese Linie endet hier. Wir bitten alle Fahrgäste auszusteigen. Milo Reisen wünscht Ihnen einen schönen Tag. Bis bald!"
+      }
+    }
+  ]
+}

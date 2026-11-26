@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Haltestellenansage – Milo Reisen</title>
+<meta name="description" content="Haltestellenansage mit Fahrtverlauf für die Busse von Milo Reisen">
+<meta name="theme-color" content="#1f75ae">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="app.css?v=0d5c701209">
+<script>window.HSA = {"version": "1.0.0", "stand": "769d433048"};</script>
+</head>
+<body>
+
+<!-- Streckenauswahl (für den Fahrer) -->
+<main id="auswahl" class="auswahl">
+  <header class="aw-band">
+    <img class="aw-logo" src="logo/schriftzug-hell.png" alt="Milo Reisen">
+    <div class="aw-titel">Haltestellenansage</div>
+    <div id="aw-gps" class="chip chip-aus" role="status">GPS wird gesucht …</div>
+  </header>
+  <div class="aw-inhalt">
+    <div id="aw-test" class="aw-testband" hidden>Testfahrt: Die Fahrt wird nur simuliert, das GPS wird nicht benutzt. Strecke wählen.</div>
+    <h1 class="aw-h">Strecke wählen</h1>
+    <div id="aw-liste" class="aw-liste"><p class="leer">Strecken werden geladen …</p></div>
+  </div>
+  <footer class="aw-fuss">
+    <button id="bt-test" class="zweit" type="button" aria-pressed="false">Testfahrt</button>
+    <button id="bt-einst" class="zweit" type="button">Einstellungen</button>
+    <span id="aw-version" class="aw-version"></span>
+  </footer>
+</main>
+
+<!-- Fahrgastanzeige (wird auf die Monitore gespiegelt) -->
+<section id="anzeige" class="anzeige" hidden aria-live="polite">
+  <header class="kopf">
+    <img id="az-symbol" class="kopf-sym" src="bilder/sev.png" alt="">
+    <div class="kopf-t"><span id="az-kopf">Ersatzverkehr</span></div>
+    <span id="az-gps" class="gps-punkt" hidden></span>
+  </header>
+  <div class="mitte"><div id="az-leiter" class="leiter"></div></div>
+  <footer class="fuss"><div class="fuss-t"><span id="az-ziel"></span></div></footer>
+  <div id="az-test" class="test-marke" hidden>Testfahrt</div>
+</section>
+
+<!-- Bedienung während der Fahrt: erscheint nach Antippen, verschwindet von selbst -->
+<div id="steuer" class="steuer" hidden>
+  <div class="st-zeile">
+    <span id="st-status" class="st-status"></span>
+    <span id="st-gps" class="st-gps"></span>
+  </div>
+  <div class="st-knoepfe">
+    <button type="button" data-a="zurueck">◀&#xFE0E; Zurück</button>
+    <button type="button" data-a="wiederholen">Ansage wiederholen</button>
+    <button type="button" data-a="weiter" class="haupt">Weiter ▶&#xFE0E;</button>
+    <button type="button" data-a="position" id="st-pos">Position speichern</button>
+    <button type="button" data-a="rueck" id="st-rueck" class="haupt" hidden>Rückfahrt</button>
+    <button type="button" data-a="beenden" id="st-ende">Fahrt beenden</button>
+  </div>
+  <div id="st-meldung" class="st-meldung" hidden></div>
+</div>
+
+<!-- Einstellungen -->
+<dialog id="einst" class="einst">
+  <form method="dialog" class="ei-form">
+    <h2>Einstellungen</h2>
+    <fieldset>
+      <legend>Begrüßung abspielen</legend>
+      <label><input type="radio" name="begr" value="abfahrt" checked> bei Abfahrt vom ersten Halt</label>
+      <label><input type="radio" name="begr" value="sofort"> sofort, wenn die Strecke angetippt wird</label>
+    </fieldset>
+    <label class="ei-zeile">„Nächste Haltestelle“ ansagen
+      <select id="ei-abstand">
+        <option value="">wie in der Strecke festgelegt</option>
+        <option value="200">200 m vor dem Halt</option>
+        <option value="300">300 m vor dem Halt</option>
+        <option value="400">400 m vor dem Halt</option>
+        <option value="600">600 m vor dem Halt</option>
+        <option value="800">800 m vor dem Halt</option>
+      </select>
+    </label>
+    <label class="ei-zeile">Tempo der Testfahrt
+      <select id="ei-tempo">
+        <option value="5">5-fach</option>
+        <option value="10" selected>10-fach</option>
+        <option value="20">20-fach</option>
+      </select>
+    </label>
+    <div class="ei-zeile">
+      <span>Lautsprecher prüfen</span>
+      <button type="button" id="ei-tontest" class="zweit">Testansage</button>
+    </div>
+    <div class="ei-zeile">
+      <span id="ei-pos-text">Gespeicherte Haltestellen-Positionen: 0</span>
+      <button type="button" id="ei-pos-loeschen" class="zweit">Alle löschen</button>
+    </div>
+    <div class="ei-zeile">
+      <span id="ei-version"></span>
+      <button type="button" id="ei-neu" class="zweit">Neu laden</button>
+    </div>
+    <p class="ei-hinweis">Die Lautstärke stellst du mit den Lautstärketasten am Tablet ein.</p>
+    <div class="ei-ende"><button class="haupt" value="ok">Fertig</button></div>
+  </form>
+</dialog>
+
+<script src="fahrt.js?v=a978736dcf"></script>
+<script src="app.js?v=f07c2fe8cb"></script>
+</body>
+</html>
