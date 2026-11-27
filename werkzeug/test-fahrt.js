@@ -1,7 +1,8 @@
 // Prüft den Ablauf einer Fahrt ohne Tablet:  node werkzeug/test-fahrt.js
 const assert = require('assert');
 const { Fahrt } = require('../fahrt.js');
-const hin = require('../strecken/s28-nach-vohwinkel.json');
+// Beispiel-Fahrpläne für die Tests (werkzeug/beispiel/, nicht in der App) – die echten in strecken/ kann der Admin löschen
+const hin = require('./beispiel/s28-nach-vohwinkel.json');
 const s11 = require('../strecken/s11-nach-koeln-worringen.json');
 const MIN = 60 * 1000;
 
@@ -67,6 +68,7 @@ for (const d of fs.readdirSync(ordner).filter(x => x.endsWith('.json') && x !== 
 const { planeLoeschung } = require('../verwaltung.js');
 const alle = {};
 for (const d of fs.readdirSync(ordner).filter(x => x.endsWith('.json') && x !== 'index.json')) alle[d.slice(0, -5)] = JSON.parse(fs.readFileSync(path.join(ordner, d), 'utf8'));
+for (const d of ['s28-nach-vohwinkel', 's28-nach-mettmann']) alle[d] = require('./beispiel/' + d + '.json');
 let plan = planeLoeschung(alle, 's11-nach-neuss-hbf');
 assert.ok(plan.loeschen.includes('strecken/s11-nach-neuss-hbf.json'));
 assert.ok(plan.loeschen.includes('ton/s11-begruessung-nach-neuss-hbf.mp3'));

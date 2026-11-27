@@ -63,7 +63,12 @@
     if (st === 403) return 'Der GitHub-Schlüssel darf nicht schreiben. Er braucht „Contents: Read and write“ für haltestellenansage – oder die Organisation milo-reisen hat ihn noch nicht freigegeben.';
     if (st === 404) return 'Der GitHub-Schlüssel hat keinen Zugriff auf milo-reisen/haltestellenansage.';
     if (e && e.name === 'TypeError') return 'Keine Verbindung zu GitHub. Bitte Internet prüfen und noch einmal versuchen.';
-    return (e && e.message) || 'Unbekannter Fehler.';
+    if (st === 409 || st === 422) return 'GitHub hat die Änderung nicht angenommen, weil sich gerade etwas anderes geändert hat. Bitte die Verwaltung schließen, wieder öffnen und noch einmal versuchen.' + githubMeldung(e);
+    return ((e && e.message) || 'Unbekannter Fehler.') + githubMeldung(e);
+  }
+
+  function githubMeldung(e) {
+    try { const m = JSON.parse(e.antwort).message; return m ? ' (GitHub: ' + m + ')' : ''; } catch (x) { return ''; }
   }
 
   async function gh(pfad, opts) {
@@ -81,37 +86,70 @@
     return res.status === 204 ? null : res.json();
   }
 
+  /* Direkt nach dem Schreiben liefert GitHub beim Lesen manchmal noch einige Sekunden den alten Stand.
+   * Darum merkt sich die Verwaltung den Stand nach ihrem eigenen Schreiben und erkennt veraltete Antworten. */
+  let eigenerStand = null;            // Stand nach dem letzten eigenen Schreiben
+  const ueberholt = new Set();        // Commits, die wir selbst schon ersetzt haben
+  const blobText = new Map();         // Dateiinhalt je Blob-Kennung (ändert sich nie)
+  const warte = ms => new Promise(r => setTimeout(r, ms));
+
   /* Aktueller Stand des Zweigs main: Commit, Baum, alle Fahrpläne und Zugangsdaten */
   async function holeStand() {
-    const ref = await gh('/git/ref/heads/' + ZWEIG);
-    const commit = await gh('/git/commits/' + ref.object.sha);
+    let ref;
+    for (let i = 0; i < 5; i++) {
+      ref = await gh('/git/ref/heads/' + ZWEIG + '?t=' + Date.now());
+      if (!ueberholt.has(ref.object.sha)) break;
+      await warte(1000);
+    }
+    const sha = ref.object.sha;
+    if (eigenerStand && (sha === eigenerStand.sha || ueberholt.has(sha))) return eigenerStand;
+    const commit = await gh('/git/commits/' + sha);
     const baum = await gh('/git/trees/' + commit.tree.sha + '?recursive=1');
     const blobs = baum.tree.filter(x => x.type === 'blob');
-    const lies = async x => dekodiere((await gh('/git/blobs/' + x.sha)).content);
+    const lies = async x => {
+      if (!blobText.has(x.sha)) blobText.set(x.sha, dekodiere((await gh('/git/blobs/' + x.sha)).content));
+      return blobText.get(x.sha);
+    };
     const daten = {};
     await Promise.all(blobs.filter(x => /^strecken\/[^/]+\.json$/.test(x.path) && x.path !== 'strecken/index.json').map(async x => {
       daten[x.path.slice('strecken/'.length, -'.json'.length)] = JSON.parse(await lies(x));
     }));
     const z = blobs.find(x => x.path === 'zugang.json');
     const zugang = z ? JSON.parse(await lies(z)) : {};
-    return { sha: ref.object.sha, baum: commit.tree.sha, daten, zugang, pfade: new Set(blobs.map(x => x.path)) };
+    return { sha, baum: commit.tree.sha, daten, zugang, pfade: new Set(blobs.map(x => x.path)) };
   }
 
-  /* Ein Commit mit allen Änderungen auf einmal */
+  /* Ein Commit mit allen Änderungen auf einmal. Liefert den Stand danach. */
   async function schreibe(stand, nachricht, loeschen, aendern) {
-    const eintraege = loeschen.filter(p => stand.pfade.has(p)).map(path => ({ path, mode: '100644', type: 'blob', sha: null }))
+    const weg = loeschen.filter(p => stand.pfade.has(p));
+    const eintraege = weg.map(path => ({ path, mode: '100644', type: 'blob', sha: null }))
       .concat(Object.entries(aendern).map(([path, content]) => ({ path, mode: '100644', type: 'blob', content })));
     const baum = await gh('/git/trees', { method: 'POST', body: JSON.stringify({ base_tree: stand.baum, tree: eintraege }) });
     const commit = await gh('/git/commits', { method: 'POST', body: JSON.stringify({ message: nachricht, tree: baum.sha, parents: [stand.sha] }) });
     await gh('/git/refs/heads/' + ZWEIG, { method: 'PATCH', body: JSON.stringify({ sha: commit.sha, force: false }) });
+    // eigenen Stand fortschreiben, statt gleich wieder bei GitHub nachzulesen
+    const daten = Object.assign({}, stand.daten);
+    const pfade = new Set(stand.pfade);
+    for (const pfad of weg) { pfade.delete(pfad); const m = /^strecken\/(.+)\.json$/.exec(pfad); if (m) delete daten[m[1]]; }
+    for (const [pfad, text] of Object.entries(aendern)) {
+      pfade.add(pfad);
+      const m = /^strecken\/(.+)\.json$/.exec(pfad);
+      if (m && m[1] !== 'index') daten[m[1]] = JSON.parse(text);
+    }
+    const zugang = aendern['zugang.json'] ? JSON.parse(aendern['zugang.json']) : stand.zugang;
+    ueberholt.add(stand.sha);
+    eigenerStand = { sha: commit.sha, baum: baum.sha, daten, zugang, pfade };
+    return eigenerStand;
   }
 
-  /* Hat in der Zwischenzeit jemand anderes etwas geändert, einmal mit frischem Stand wiederholen. */
+  /* Hat in der Zwischenzeit jemand anderes etwas geändert (GitHub: 409/422), mit frischem Stand wiederholen. */
   async function mitWiederholung(arbeit) {
-    try { return await arbeit(await holeStand()); }
-    catch (e) {
-      if (e.status !== 409 && e.status !== 422) throw e;
-      return arbeit(await holeStand());
+    for (let versuch = 1; ; versuch++) {
+      try { return await arbeit(await holeStand()); }
+      catch (e) {
+        if ((e.status !== 409 && e.status !== 422) || versuch >= 3) throw e;
+        await warte(1500 * versuch);
+      }
     }
   }
 
@@ -203,11 +241,11 @@
     meldung('„' + plan.titel + '“ wird gelöscht …');
     try {
       await mitWiederholung(async st => {
+        if (!st.daten[id]) { stand = st; return; }           // war schon gelöscht
         const p = planeLoeschung(st.daten, id);
-        await schreibe(st, 'Verwaltung: Fahrplan „' + p.titel + '“ gelöscht', p.loeschen, p.aendern);
+        stand = await schreibe(st, 'Verwaltung: Fahrplan „' + p.titel + '“ gelöscht', p.loeschen, p.aendern);
       });
       meldung('„' + plan.titel + '“ ist gelöscht. Die Tablets übernehmen das innerhalb weniger Minuten, sobald sie online sind.', 'ok');
-      await ladeStand();
       App().aktualisiereStrecken(true);
     } catch (e) { meldung(fehlerText(e), 'fehler'); }
     sperre(false);
@@ -227,7 +265,7 @@
         if (f) neu.fahrer = await App().pinHash(f);
         if (a) neu.admin = await App().pinHash(a);
         if (neu.fahrer === neu.admin) { const e = new Error('Fahrer-PIN und Admin-PIN müssen verschieden sein.'); e.status = 0; throw e; }
-        await schreibe(st, 'Verwaltung: ' + (f && a ? 'Fahrer- und Admin-PIN' : f ? 'Fahrer-PIN' : 'Admin-PIN') + ' geändert', [], { 'zugang.json': alsText(neu, 1) });
+        stand = await schreibe(st, 'Verwaltung: ' + (f && a ? 'Fahrer- und Admin-PIN' : f ? 'Fahrer-PIN' : 'Admin-PIN') + ' geändert', [], { 'zugang.json': alsText(neu, 1) });
       });
       fIn.value = ''; aIn.value = '';
       meldung('Gespeichert. Die neue PIN gilt auf allen Tablets, sobald sie online sind.', 'ok');
@@ -266,7 +304,7 @@
     ladeStand();
   }
 
-  $('#vw-zu').addEventListener('click', () => { stand = null; App().zeigeAnmeldung(); });
+  $('#vw-zu').addEventListener('click', () => { stand = null; eigenerStand = null; App().zeigeAnmeldung(); });
   $('#vw-pin-speichern').addEventListener('click', speicherePins);
   $('#vw-schluessel-speichern').addEventListener('click', speichereSchluessel);
   $('#vw-schluessel-weg').addEventListener('click', entferneSchluessel);
