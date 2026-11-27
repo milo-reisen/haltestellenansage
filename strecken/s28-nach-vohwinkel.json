@@ -4,7 +4,6 @@
   "farbe": "#9C1963",
   "symbol": "bilder/sev.png",
   "ziel": "Wuppertal-Vohwinkel",
-  "rueckfahrt": "s28-nach-mettmann",
   "ansageVorHalt": 400,
   "begruessung": {
     "ton": "ton/s28-begruessung-nach-vohwinkel.mp3",
