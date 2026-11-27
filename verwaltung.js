@@ -133,6 +133,9 @@
       ? 'Auf diesem Gerät ist ein Schlüssel gespeichert (endet auf …' + k.slice(-4) + ').'
       : 'Auf diesem Gerät ist noch kein Schlüssel gespeichert. Ohne Schlüssel kannst du nichts löschen und keine PIN ändern.';
     $('#vw-schluessel-weg').hidden = !k;
+    $('#vw-pin-hinweis').textContent = k
+      ? 'Je 4 Ziffern. Was gleich bleiben soll, leer lassen. Gilt für alle Tablets.'
+      : 'Zum Ändern der PINs zuerst unten unter „GitHub-Schlüssel“ einmal den Schlüssel eintragen. Danach: je 4 Ziffern, gilt für alle Tablets.';
   }
 
   function zeichneListe() {
