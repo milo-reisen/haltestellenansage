@@ -22,13 +22,15 @@ let e = f.tick(t + 2 * MIN);
 assert.deepStrictEqual([e.typ, f.anzeige], ['weiter', ['Wuppertal-Vohwinkel']]);
 assert.strictEqual(f.tick(t + 5 * MIN), null, 'nur einmal weiterrücken');
 
-// 3) Endhalt: Ansage, nach 2 Minuten Ende; danach wiederholt die Schaltfläche nur die letzte Ansage
+// 3) Endhalt: Ansage, danach bleibt das Bild stehen (keine Wartezeit, keine Rückfahrt von selbst);
+//    nochmal tippen wiederholt nur die letzte Ansage
 const end = f.ansage(); assert.ok(/endet hier/.test(end.text));
 f.ansageFertig(t + 3 * MIN);
-e = f.tick(t + 5 * MIN);
-assert.strictEqual(e.typ, 'ende'); assert.ok(f.amEnde);
+assert.strictEqual(f.restMs(t + 3 * MIN), null, 'am Endhalt läuft keine Zeit');
+assert.strictEqual(f.tick(t + 60 * MIN), null);
+assert.ok(f.istEndhalt && !f.amEnde);
 assert.deepStrictEqual(f.anzeige, ['Wuppertal-Vohwinkel']);
-assert.strictEqual(f.ansage(), end); f.ansageFertig(t + 6 * MIN); assert.strictEqual(f.tick(t + 9 * MIN), null);
+assert.deepStrictEqual(f.ansage(), end); f.ansageFertig(t + 61 * MIN); assert.strictEqual(f.tick(t + 90 * MIN), null);
 
 // 4) Nochmal tippen während der Wartezeit: Zeit beginnt nach der neuen Ansage von vorn
 f = new Fahrt(hin); f.ansage(); f.ansageFertig(t);

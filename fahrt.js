@@ -69,9 +69,10 @@
       return t;
     }
 
-    /** Ansage ist zu Ende gesprochen: jetzt läuft die Zeit bis zum Weiterrücken. */
+    /** Ansage ist zu Ende gesprochen: jetzt läuft die Zeit bis zum Weiterrücken.
+     *  Am Endhalt läuft keine Zeit – das Bild bleibt stehen, bis der Fahrer die Fahrt selbst beendet. */
     ansageFertig(jetzt) {
-      if (this.angesagt && !this.ende) this.wechselUm = jetzt + this.o.wechselNachMs;
+      if (this.angesagt && !this.ende && !this.istEndhalt) this.wechselUm = jetzt + this.o.wechselNachMs;
     }
 
     restMs(jetzt) { return this.wechselUm == null ? null : Math.max(0, this.wechselUm - jetzt); }

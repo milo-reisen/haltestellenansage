@@ -14,7 +14,8 @@ Adresse der App: **https://milo-reisen.github.io/haltestellenansage/**
    Fahrgäste eine Überschrift, für den Fahrer die Schaltfläche. Tippt er darauf, sagt Paula „Nächste Haltestelle: …“.
 3. **2 Minuten nach dieser Ansage** rückt die Anzeige von selbst weiter zum folgenden Halt. Der feine Strich in der
    Fläche „Nächste Haltestelle“ zeigt die verbleibende Zeit.
-4. Nach dem Endhalt zeigt die App von selbst die **Rückfahrt** an und begrüßt die neuen Fahrgäste.
+4. Am **Endhalt** bleibt das Bild nach der Ansage stehen. Der Fahrer beendet die Fahrt selbst über das Fahrermenü
+   („Fahrt beenden“) oder wählt dort die Rückfahrt.
 
 Kein GPS nötig. Nochmal Tippen während der Wartezeit wiederholt die Ansage, die 2 Minuten beginnen dann neu.
 
@@ -30,7 +31,7 @@ Fahrer können nichts löschen und nichts umstellen.
   Ansagen bleiben, ein Rückfahrt-Verweis der Gegenrichtung wird entfernt),
 - Fahrer-PIN und Admin-PIN **ändern** (in `zugang.json` stehen nur Prüfsummen),
 - die **Einstellungen für dieses Tablet** ändern: Wechselzeit (1–5 Minuten, oder 10 Sekunden zum Ausprobieren),
-  Begrüßung beim Start an/aus, Rückfahrt von selbst an/aus.
+  Begrüßung beim Start an/aus.
 
 Löschen und PIN ändern schreiben direkt ins GitHub-Repository. Dafür braucht das Gerät einen **GitHub-Schlüssel**
 (fine-grained token, nur Repository `haltestellenansage`, „Contents: Read and write“). Er wird nur auf diesem Gerät

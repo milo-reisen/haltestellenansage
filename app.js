@@ -13,7 +13,7 @@
   /* ---------- Speicher auf dem Tablet ---------- */
   const lies = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
   const schreib = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* voll oder gesperrt */ } };
-  const einst = Object.assign({ wechselSek: 120, begruessung: true, autoRueck: true }, lies('hsa.einst2', {}));
+  const einst = Object.assign({ wechselSek: 120, begruessung: true }, lies('hsa.einst2', {}));
 
   /* ---------- Zustand ---------- */
   let strecken = [];          // geladene Fahrpläne (mit id)
@@ -274,15 +274,9 @@
   function nachEreignis(e) {
     if (!e) return;
     zeichneAnzeige();
-    if (e.typ === 'ende') rueckfahrtOderEnde();
     if (!$('#steuer').hidden) zeigeStatus();
   }
-
-  /* Am Ende von selbst die Gegenrichtung zeigen (Einstellung), sonst Endhaltestelle stehen lassen. */
-  function rueckfahrtOderEnde() {
-    const r = aktiv && aktiv.strecke.rueckfahrt;
-    if (einst.autoRueck && r && strecken.some(x => x.id === r)) starteFahrt(r, true);
-  }
+  // Am Endhalt bleibt das Bild stehen; der Fahrer beendet die Fahrt selbst (Fahrermenü) oder wählt die Rückfahrt.
 
   setInterval(() => {
     if (!fahrt) return;
@@ -407,14 +401,14 @@
     if (!fahrt) return;
     const rest = fahrt.restMs(Date.now());
     let text;
-    if (fahrt.amEnde) text = 'Endhaltestelle ' + fahrt.naechster.name + ' erreicht.';
+    if (fahrt.amEnde || (fahrt.istEndhalt && fahrt.angesagt)) text = 'Endhaltestelle „' + fahrt.naechster.name + '“ angesagt. Die Anzeige bleibt so, bis du „Fahrt beenden“ oder die Rückfahrt antippst.';
     else if (rest != null) text = '„' + fahrt.naechster.name + '“ angesagt – Anzeige wechselt in ' + mmss(rest) + ' zum nächsten Halt.';
     else text = 'Nächster Halt: „' + fahrt.naechster.name + '“ – zum Ansagen auf „Nächste Haltestelle“ tippen.';
     $('#st-status').textContent = text;
     const r = aktiv.strecke.rueckfahrt && strecken.find(x => x.id === aktiv.strecke.rueckfahrt);
     $('#st-rueck').hidden = !r;
     if (r) $('#st-rueck').textContent = 'Rückfahrt nach ' + (r.ziel || r.halte[r.halte.length - 1].name);
-    $('#steuer [data-a=weiter]').disabled = fahrt.amEnde;
+    $('#steuer [data-a=weiter]').disabled = fahrt.amEnde || fahrt.istEndhalt;
     $('#steuer [data-a=zurueck]').disabled = fahrt.k === 1 && !fahrt.amEnde;
   }
 
@@ -445,12 +439,10 @@
   function zeigeEinstellungen() {
     $('#ei-wechsel').value = String(einst.wechselSek);
     $('#ei-begr').checked = !!einst.begruessung;
-    $('#ei-autorueck').checked = !!einst.autoRueck;
   }
   $('#vw-tablet').addEventListener('change', () => {
     einst.wechselSek = Number($('#ei-wechsel').value) || 120;
     einst.begruessung = $('#ei-begr').checked;
-    einst.autoRueck = $('#ei-autorueck').checked;
     schreib('hsa.einst2', einst);
   });
 

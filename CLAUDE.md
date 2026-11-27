@@ -7,7 +7,8 @@ Nutzer und Texte sind deutsch; Code-Bezeichner ebenfalls deutsch halten.
 - Bedienung ohne GPS (Nutzer hat GPS/Samsara verworfen): Fahrer tippt Fahrplan → Begrüßung; „Nächste Haltestelle“
   groß in zart getönter Fläche mit feinem Rand, ohne Symbol (Fahrer soll sie als Schaltfläche erkennen, Fahrgästen soll sie
   kaum auffallen) → Ansage; 2 Minuten nach Ende der Ansage rückt die
-  Anzeige weiter; nach Endhalt Rückfahrt.
+  Anzeige weiter; am Endhalt bleibt das Bild stehen (keine Zeit, keine Rückfahrt von selbst – vom Nutzer so gewollt),
+  der Fahrer beendet die Fahrt selbst über das Fahrermenü.
 - Vorher immer `git pull`: Der Admin-Bereich der App (verwaltung.js) löscht Fahrpläne und ändert PINs direkt im
   Repository über die GitHub-API (Schlüssel nur auf dem Admin-Gerät). Anmeldung: eine Fahrer-PIN für alle (5554),
   eigene Admin-PIN; in `zugang.json` nur SHA-256 von „milo-hsa:“ + PIN. Fahrer dürfen nichts löschen oder umstellen –
