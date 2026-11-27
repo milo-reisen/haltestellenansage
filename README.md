@@ -54,6 +54,10 @@ Alle Ansagen sind mit **ElevenLabs, Stimme „Paula – Casual & normal“** auf
 Stabilität 50 %, Ähnlichkeit 75 %) und liegen als MP3 im Ordner `ton/`. Fehlt eine Aufnahme oder lädt sie nicht,
 liest die Computerstimme des Tablets den `text` vor.
 
+ElevenLabs liefert Paula sehr leise (um −29 LUFS). Darum nach jeder neuen Aufnahme
+`python3 werkzeug/lautheit.py` ausführen: Es bringt alle Ansagen auf −16 LUFS (Spitzen höchstens −1,5 dBFS),
+verdichtet sie sanft und lässt Dateien, die schon passen, unverändert. Braucht ffmpeg.
+
 ## Neuen Fahrplan anlegen
 
 Jede Fahrtrichtung ist eine Datei in `strecken/`, z. B. `strecken/s11-nach-koeln-worringen.json`:

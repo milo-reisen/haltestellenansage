@@ -10,14 +10,16 @@ Nutzer und Texte sind deutsch; Code-Bezeichner ebenfalls deutsch halten.
   Anzeige weiter; am Endhalt bleibt das Bild stehen (keine Zeit, keine Rückfahrt von selbst – vom Nutzer so gewollt),
   der Fahrer beendet die Fahrt selbst über das Fahrermenü.
 - Vorher immer `git pull`: Der Admin-Bereich der App (verwaltung.js) löscht Fahrpläne und ändert PINs direkt im
-  Repository über die GitHub-API (Schlüssel nur auf dem Admin-Gerät). Anmeldung: eine Fahrer-PIN für alle (5554),
-  eigene Admin-PIN; in `zugang.json` nur SHA-256 von „milo-hsa:“ + PIN. Fahrer dürfen nichts löschen oder umstellen –
+  Repository über die GitHub-API (Schlüssel nur auf dem Admin-Gerät). Anmeldung: eine Fahrer-PIN für alle (anfangs 5554,
+  der Admin hat beide PINs inzwischen selbst geändert – nicht mehr bekannt), eigene Admin-PIN; in `zugang.json` nur SHA-256 von „milo-hsa:“ + PIN. Fahrer dürfen nichts löschen oder umstellen –
   Einstellungen nur im Admin-Bereich.
 - Nach jeder Änderung `python3 werkzeug/fertig.py` ausführen (prüft Fahrpläne, setzt Kennungen, `sw.js`, `version.json`),
   dann `node werkzeug/test-fahrt.js`. Erst danach committen.
 - Neuer Fahrplan = eine JSON-Datei je Fahrtrichtung in `strecken/` (Format siehe README), Gegenrichtung über `rueckfahrt`.
   Ansagen mit ElevenLabs, Stimme „Paula – Casual & normal“ (Geschwindigkeit 1,00, Stabilität 50, Ähnlichkeit 75),
-  als MP3 in `ton/`; Wortlaut immer auch als `text` eintragen. Muster: Begrüßung „Sehr geehrte Fahrgäste, wir begrüßen
+  als MP3 in `ton/`, danach `python3 werkzeug/lautheit.py` (bringt alle Ansagen auf −16 LUFS – ElevenLabs liefert
+  Paula sehr leise, um −29 LUFS; vom Nutzer gewünscht, im Bus hört man sie sonst schlecht); Wortlaut immer auch als
+  `text` eintragen. Muster: Begrüßung „Sehr geehrte Fahrgäste, wir begrüßen
   Sie im Schienenersatzverkehr der Linie … Dieser Bus fährt über … nach … Milo Reisen wünscht Ihnen einen schönen Tag.
   Bis bald. Nächste Haltestelle: …“; je Halt „Nächste Haltestelle: X.“; Endhalt zusätzlich „Diese Linie endet hier.
   Wir bitten alle Fahrgäste auszusteigen. Milo Reisen wünscht Ihnen einen schönen Tag. Bis bald!“
